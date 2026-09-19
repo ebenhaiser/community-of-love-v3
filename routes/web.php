@@ -7,6 +7,7 @@ use App\Livewire\Auth\Login;
 use App\Livewire\Cools\CoolDetail;
 use App\Livewire\Cools\CoolIndex;
 use App\Livewire\Dashboard;
+use App\Livewire\Bible\Reader;
 use App\Livewire\Events\EventIndex;
 use App\Livewire\FollowUps\FollowUpIndex;
 use App\Livewire\Master\AppUserManager;
@@ -24,6 +25,8 @@ use Illuminate\Support\Facades\Route;
 // Public Routes
 Route::get('/login', Login::class)->name('login')->middleware('guest');
 Route::get('/c/{qrToken}', CoolPortal::class)->name('cool.portal');
+
+Route::get('/bible', Reader::class)->name('bible.read'); // on dev
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
