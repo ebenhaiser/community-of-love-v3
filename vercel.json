@@ -1,43 +1,13 @@
 {
-    "version": 2,
-    "framework": null,
     "functions": {
-        "api/index.php": {
-            "runtime": "vercel-php@0.8.0"
+        "api/*.php": {
+            "runtime": "vercel-php@0.9.0"
         }
     },
     "routes": [
         {
-            "src": "/build/(.*)",
-            "dest": "/public/build/"
-        },
-        {
             "src": "/(.*)",
             "dest": "/api/index.php"
         }
-    ],
-    "public": true,
-    "buildCommand": "vite build",
-    "outputDirectory": "public",
-    "env": {
-        "APP_ENV": "production",
-        "APP_DEBUG": "false",
-        "APP_URL": "https://community-of-love-v3.vercel.app",
-        "APP_KEY": "base64:OvP3aNafJBWES5z4/ShtlOvy2qs7VioAnmHsXIxiYZk=",
-        "APP_CONFIG_CACHE": "/tmp/config.php",
-        "APP_EVENTS_CACHE": "/tmp/events.php",
-        "APP_PACKAGES_CACHE": "/tmp/packages.php",
-        "APP_ROUTES_CACHE": "/tmp/routes.php",
-        "APP_SERVICES_CACHE": "/tmp/services.php",
-        "VIEW_COMPILED_PATH": "/tmp",
-        "CACHE_DRIVER": "array",
-        "LOG_CHANNEL": "stderr",
-        "SESSION_DRIVER": "cookie",
-        "DB_CONNECTION": "mysql",
-        "DB_HOST": "sql.freedb.tech",
-        "DB_PORT": "3306",
-        "DB_DATABASE": "freedb_MOvNZOa8",
-        "DB_USERNAME": "freedb_u_2JP4gL",
-        "DB_PASSWORD": "XruyFzcxbGT6"
-    }
+    ]
 }
