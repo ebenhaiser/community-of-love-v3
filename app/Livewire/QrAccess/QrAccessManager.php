@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Livewire\QrAccess;
+
+use App\Models\Cool;
+use App\Models\QrAccess;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+
+#[Layout('layouts.app')]
+#[Title('Manajemen Akses QR & PIN Jemaat')]
+class QrAccessManager extends Component
+{
+    public bool $showPinModal = false;
+
+    public ?int $selectedQrAccessId = null;
+
+    public string $selectedCoolName = '';
+
+    public string $newPin = '';
+
+    public function openPinModal(int $qrAccessId): void
+    {
+        $qr = QrAccess::with('cool')->findOrFail($qrAccessId);
+        $this->selectedQrAccessId = $qr->qr_access_id;
+        $this->selectedCoolName = $qr->cool->name ?? 'COOL';
+        $this->newPin = '';
+        $this->showPinModal = true;
+    }
+
+    public function updatePin(): void
+    {
+        $this->validate([
+            'newPin' => 'required|digits:6',
+        ], [
+            'newPin.required' => 'PIN 6-digit wajib diisi.',
+            'newPin.digits' => 'PIN harus terdiri dari 6 angka.',
+        ]);
+
+        $qr = QrAccess::findOrFail($this->selectedQrAccessId);
+        $qr->update([
+            'pin_hash' => Hash::make($this->newPin),
+            'modified_by' => Auth::id() ?? 1,
+            'date_modified' => now(),
+        ]);
+
+        session()->flash('success', "PIN untuk {$this->selectedCoolName} berhasil diperbarui menjadi: {$this->newPin}");
+        $this->showPinModal = false;
+        $this->newPin = '';
+    }
+
+    public function regenerateToken(int $qrAccessId): void
+    {
+        $qr = QrAccess::with('cool')->findOrFail($qrAccessId);
+        $newToken = 'qr-'.Str::slug($qr->cool->name ?? 'cool').'-'.Str::random(12);
+
+        $qr->update([
+            'qr_token' => $newToken,
+            'modified_by' => Auth::id() ?? 1,
+            'date_modified' => now(),
+        ]);
+
+        session()->flash('success', "Token QR untuk {$qr->cool->name} berhasil diperbarui.");
+    }
+
+    public function generateMissingQr(int $coolId): void
+    {
+        $cool = Cool::findOrFail($coolId);
+        $token = 'qr-'.Str::slug($cool->name).'-'.Str::random(12);
+        $defaultPin = '123456';
+
+        QrAccess::create([
+            'cool_id' => $cool->cool_id,
+            'access_code' => 'ACC-'.strtoupper(Str::random(6)),
+            'pin_hash' => Hash::make($defaultPin),
+            'qr_token' => $token,
+            'is_active' => true,
+            'is_deleted' => false,
+            'created_by' => Auth::id() ?? 1,
+            'date_created' => now(),
+        ]);
+
+        session()->flash('success', "Akses QR berhasil dibuat untuk {$cool->name}. Default PIN: 123456");
+    }
+
+    public function render()
+    {
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        $cools = Cool::where('is_deleted', false)
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->with(['shepherd', 'qrAccess' => fn ($q) => $q->where('qr_accesses.is_deleted', false)])
+            ->orderBy('name')
+            ->get();
+
+        return view('livewire.qr-access.qr-access-manager', compact('cools', 'isShepherd'));
+    }
+}

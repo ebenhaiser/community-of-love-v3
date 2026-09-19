@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Cool extends Model
 {
@@ -68,6 +69,11 @@ class Cool extends Model
     public function qrAccesses(): HasMany
     {
         return $this->hasMany(QrAccess::class, 'cool_id', 'cool_id');
+    }
+
+    public function qrAccess(): HasOne
+    {
+        return $this->hasOne(QrAccess::class, 'cool_id', 'cool_id')->latestOfMany('qr_access_id');
     }
 
     public function messages(): HasMany

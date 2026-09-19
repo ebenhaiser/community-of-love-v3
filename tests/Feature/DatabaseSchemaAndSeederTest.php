@@ -116,4 +116,22 @@ class DatabaseSchemaAndSeederTest extends TestCase
         $this->assertCount(5, $event->members);
         $this->assertCount(5, $event->attendances);
     }
+
+    /**
+     * Test dashboard page renders with Spark Admin layout and seeded statistics.
+     */
+    public function test_dashboard_page_renders_with_spark_admin_layout(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $master = User::where('username', 'master')->first();
+        $response = $this->actingAs($master)->get('/');
+
+        $response->assertStatus(200);
+        $response->assertSee('Dashboard Manajemen COOL');
+        $response->assertSee('COOL Salemba');
+        $response->assertSee('COOL-SLM-001');
+        $response->assertSee('Ps. Budi Santoso');
+        $response->assertSee('spark-admin-1.0.0/assets/css/main.css');
+    }
 }
