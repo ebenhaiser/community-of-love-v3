@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Helpers\AppHelper;
 use App\Models\QrAccess;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -15,7 +16,8 @@ class QrAccessSeeder extends Seeder
     public function run(): void
     {
         $now = Carbon::now();
-        $defaultPinHash = Hash::make('123456');
+        $defaultPinHash = AppHelper::getSettings('default_qr_pin') ?? 'password123';
+        $defaultPinHash = Hash::make($defaultPinHash);
 
         $qrAccesses = [
             [

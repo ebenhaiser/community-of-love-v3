@@ -50,7 +50,7 @@
   <!-- Default Credentials Info for Testing -->
   <div class="mt-4 p-3 bg-light rounded text-start small border">
     <div class="fw-bold text-dark mb-1"><i class="bi bi-info-circle-fill text-primary me-1"></i> Akun Pengujian (Seeder):</div>
-    <div class="text-muted">Master: <code>master</code> / <code>password123</code></div>
-    <div class="text-muted">Gembala: <code>gembala.budi</code> / <code>password123</code></div>
+    <div class="text-muted">Master: <code>master</code> / <code>{{ $defaultPassword }}</code></div>
+    <div class="text-muted">Gembala: <code>gembala.budi</code> / <code>{{ $defaultPassword }}</code></div>
   </div>
 </div>

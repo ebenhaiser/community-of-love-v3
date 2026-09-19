@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use App\Helpers\AppHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -18,6 +19,8 @@ class Login extends Component
     public string $password = '';
 
     public bool $remember = false;
+
+    public string $defaultPassword = '';
 
     public function login(): void
     {
@@ -63,6 +66,7 @@ class Login extends Component
 
     public function render()
     {
+        $this->defaultPassword = AppHelper::getSettings('default_user_password') ?? 'password123';
         return view('livewire.auth.login');
     }
 }

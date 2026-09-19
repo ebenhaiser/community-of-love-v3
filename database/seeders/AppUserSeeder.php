@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Helpers\AppHelper;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -15,7 +16,8 @@ class AppUserSeeder extends Seeder
     public function run(): void
     {
         $now = Carbon::now();
-        $defaultPassword = Hash::make('password123');
+        $_defaultPassword = AppHelper::getSettings('default_user_password');
+        $defaultPassword = Hash::make($_defaultPassword);
 
         $users = [
             [
