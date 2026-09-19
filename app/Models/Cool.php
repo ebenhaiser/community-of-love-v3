@@ -58,6 +58,8 @@ class Cool extends Model
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(Member::class, 'cool_members', 'cool_id', 'member_id')
+            ->wherePivot('is_deleted', false)
+            ->where('members.is_deleted', false)
             ->withPivot(['start_date', 'end_date', 'status', 'is_deleted']);
     }
 

@@ -22,7 +22,7 @@ class Dashboard extends Component
         $user = Auth::user();
         $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
 
-        $coolQuery = Cool::where('is_deleted', false);
+        $coolQuery = Cool::where('is_deleted', false)->where('is_active', true);
         if ($isShepherd) {
             $coolQuery->where('shepherd_id', $user->shepherd_id);
         }
@@ -30,7 +30,7 @@ class Dashboard extends Component
         $coolIds = $cools->pluck('cool_id');
 
         $totalCools = $cools->count();
-        $totalShepherds = $isShepherd ? 1 : Shepherd::where('is_deleted', false)->count();
+        $totalShepherds = $isShepherd ? 1 : Shepherd::where('is_deleted', false)->where('is_active', true)->count();
 
         $memberQuery = Member::where('is_deleted', false);
         if ($isShepherd) {

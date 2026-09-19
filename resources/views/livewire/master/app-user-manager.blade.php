@@ -75,7 +75,6 @@
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
-              <th style="width: 60px;">#</th>
               <th>Pengguna</th>
               <th>Kontak</th>
               <th>Peran</th>
@@ -87,7 +86,6 @@
           <tbody>
             @forelse ($users as $user)
               <tr>
-                <td class="text-muted small">#{{ $user->user_id }}</td>
                 <td>
                   <div class="d-flex align-items-center gap-2">
                     <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center"

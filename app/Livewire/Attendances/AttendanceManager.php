@@ -168,7 +168,7 @@ class AttendanceManager extends Component
             return;
         }
 
-        $activity = Activity::with('cool.members')->find($this->activity_id);
+        $activity = Activity::find($this->activity_id);
         if (! $activity || ! $activity->cool) {
             return;
         }
@@ -177,7 +177,14 @@ class AttendanceManager extends Component
         $presentStatus = AttendanceStatus::where('code', 'PRESENT')->first();
         $statusId = $presentStatus ? $presentStatus->attendance_status_id : 1;
 
-        foreach ($activity->cool->members as $member) {
+        $members = Member::where('is_deleted', false)
+            ->whereHas('coolMembers', function ($q) use ($activity) {
+                $q->where('cool_id', $activity->cool_id)
+                    ->where('cool_members.is_deleted', false);
+            })
+            ->get();
+
+        foreach ($members as $member) {
             Attendance::updateOrCreate(
                 [
                     'activity_id' => $this->activity_id,
