@@ -32,8 +32,10 @@
         <div class="col-6 col-md-2">
           <select class="form-select" wire:model.live="statusFilter">
             <option value="">Semua Status</option>
-            <option value="active">Aktif</option>
-            <option value="inactive">Non-Aktif</option>
+            <option value="ACTIVE">Aktif</option>
+            <option value="NEW">Baru</option>
+            <option value="MOVED">Pindah</option>
+            <option value="INACTIVE">Non-Aktif</option>
           </select>
         </div>
         <div class="col-12 col-md-2 text-md-end text-start">
@@ -115,10 +117,26 @@
                   </span>
                 </td>
                 <td>
-                  @if ($member->is_active)
-                    <span class="badge bg-success">Aktif</span>
+                  @if ($member->status === 'ACTIVE')
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                      <i class="bi bi-check-circle-fill me-1"></i>Aktif
+                    </span>
+                  @elseif ($member->status === 'NEW')
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                      <i class="bi bi-person-plus-fill me-1"></i>Baru
+                    </span>
+                  @elseif ($member->status === 'MOVED')
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                      <i class="bi bi-arrow-left-right me-1"></i>Pindah
+                    </span>
+                  @elseif ($member->status === 'INACTIVE' || ! $member->is_active)
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                      <i class="bi bi-dash-circle me-1"></i>Non-Aktif
+                    </span>
                   @else
-                    <span class="badge bg-secondary">Non-Aktif</span>
+                    <span class="badge bg-light text-dark border">
+                      {{ $member->status }}
+                    </span>
                   @endif
                 </td>
                 <td class="text-end text-nowrap">
@@ -212,17 +230,17 @@
               <div class="row g-2 mb-2">
                 <div class="col-md-6">
                   <label for="status" class="form-label fw-semibold">Status Keanggotaan</label>
-                  <select id="status" wire:model="status" class="form-select">
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="INACTIVE">INACTIVE</option>
-                    <option value="NEW">NEW</option>
-                    <option value="MOVED">MOVED</option>
+                  <select id="status" wire:model.live="status" class="form-select">
+                    <option value="ACTIVE">Aktif (ACTIVE)</option>
+                    <option value="NEW">Baru (NEW)</option>
+                    <option value="MOVED">Pindah (MOVED)</option>
+                    <option value="INACTIVE">Non-Aktif (INACTIVE)</option>
                   </select>
                 </div>
                 <div class="col-md-6 d-flex align-items-center mt-4">
                   <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="is_active" wire:model="is_active">
-                    <label class="form-check-label fw-semibold" for="is_active">Aktif</label>
+                    <input class="form-check-input" type="checkbox" id="is_active" wire:model.live="is_active">
+                    <label class="form-check-label fw-semibold" for="is_active">Status Aktif Sistem</label>
                   </div>
                 </div>
               </div>

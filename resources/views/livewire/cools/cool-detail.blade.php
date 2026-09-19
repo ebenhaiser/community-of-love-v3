@@ -129,9 +129,18 @@
                     @endif
                   </td>
                   <td>{{ $cm->member->email ?? '-' }}</td>
-                  <td>{{ $cm->start_date ? \Carbon\Carbon::parse($cm->start_date)->format('d M Y') : '-' }}</td>
-                  <td><span class="badge bg-success">Aktif</span></td>
-                </tr>
+                  <td>
+                    @php $mbrStatus = $cm->member->status ?? $cm->status; @endphp
+                    @if ($mbrStatus === 'ACTIVE' || ($cm->member->is_active && !in_array($mbrStatus, ['INACTIVE', 'MOVED'])))
+                      <span class="badge bg-success-subtle text-success border border-success-subtle">Aktif</span>
+                    @elseif ($mbrStatus === 'NEW')
+                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Baru</span>
+                    @elseif ($mbrStatus === 'MOVED')
+                      <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Pindah</span>
+                    @else
+                      <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Non-Aktif</span>
+                    @endif
+                  </td>
               @empty
                 <tr>
                   <td colspan="6" class="text-center text-muted py-4">

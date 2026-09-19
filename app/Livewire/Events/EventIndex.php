@@ -83,7 +83,7 @@ class EventIndex extends Component
             abort(403, 'Hanya Master Administrator yang dapat mengedit event gereja.');
         }
 
-        $event = ChurchEvent::with(['cools' => fn ($q) => $q->wherePivot('is_deleted', false)])->findOrFail($eventId);
+        $event = ChurchEvent::with(['cools' => fn ($q) => $q->where('event_cools.is_deleted', false)])->findOrFail($eventId);
         $this->editingEventId = $event->event_id;
         $this->event_code = $event->event_code;
         $this->name = $event->name;

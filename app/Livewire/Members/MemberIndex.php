@@ -65,6 +65,24 @@ class MemberIndex extends Component
         $this->join_date = date('Y-m-d');
     }
 
+    public function updatedStatus(string $value): void
+    {
+        if ($value === 'INACTIVE' || $value === 'MOVED') {
+            $this->is_active = false;
+        } else {
+            $this->is_active = true;
+        }
+    }
+
+    public function updatedIsActive(bool $value): void
+    {
+        if (! $value && ($this->status === 'ACTIVE' || $this->status === 'NEW')) {
+            $this->status = 'INACTIVE';
+        } elseif ($value && $this->status === 'INACTIVE') {
+            $this->status = 'ACTIVE';
+        }
+    }
+
     public function openCreateModal(): void
     {
         $this->resetForm();
@@ -140,6 +158,12 @@ class MemberIndex extends Component
             'join_date.required' => 'Tanggal bergabung wajib diisi.',
         ]);
 
+        if ($this->status === 'INACTIVE' || $this->status === 'MOVED') {
+            $this->is_active = false;
+        } elseif (! $this->is_active && $this->status === 'ACTIVE') {
+            $this->status = 'INACTIVE';
+        }
+
         $data = [
             'member_code' => $this->member_code,
             'name' => $this->name,
@@ -183,13 +207,13 @@ class MemberIndex extends Component
                 'date_modified' => now(),
             ]));
 
-            // Update COOL assignment if changed
-            if ($this->cool_id) {
-                $existingActive = CoolMember::where('member_id', $member->member_id)
-                    ->where('is_deleted', false)
-                    ->first();
+            // Update COOL assignment if changed or update status on existing assignment
+            $existingActive = CoolMember::where('member_id', $member->member_id)
+                ->where('is_deleted', false)
+                ->first();
 
-                if (! $existingActive || $existingActive->cool_id !== $this->cool_id) {
+            if ($this->cool_id) {
+                if (! $existingActive || $existingActive->cool_id !== (int) $this->cool_id) {
                     if ($existingActive) {
                         $existingActive->update([
                             'end_date' => now()->toDateString(),
@@ -204,12 +228,26 @@ class MemberIndex extends Component
                         'cool_id' => $this->cool_id,
                         'member_id' => $member->member_id,
                         'start_date' => now()->toDateString(),
-                        'status' => 'ACTIVE',
+                        'status' => $this->status,
                         'is_deleted' => false,
                         'created_by' => $userId,
                         'date_created' => now(),
                     ]);
+                } else {
+                    $existingActive->update([
+                        'status' => $this->status,
+                        'modified_by' => $userId,
+                        'date_modified' => now(),
+                    ]);
                 }
+            } elseif ($existingActive) {
+                $existingActive->update([
+                    'end_date' => now()->toDateString(),
+                    'status' => 'REMOVED',
+                    'is_deleted' => true,
+                    'modified_by' => $userId,
+                    'date_modified' => now(),
+                ]);
             }
 
             session()->flash('success', "Data anggota '{$member->name}' berhasil diperbarui.");
@@ -225,7 +263,7 @@ class MemberIndex extends Component
                     'cool_id' => $this->cool_id,
                     'member_id' => $member->member_id,
                     'start_date' => $this->join_date,
-                    'status' => 'ACTIVE',
+                    'status' => $this->status,
                     'is_deleted' => false,
                     'created_by' => $userId,
                     'date_created' => now(),
@@ -294,10 +332,18 @@ class MemberIndex extends Component
                 });
             })
             ->when($this->statusFilter, function ($q) {
-                if ($this->statusFilter === 'active') {
-                    $q->where('is_active', true);
-                } elseif ($this->statusFilter === 'inactive') {
-                    $q->where('is_active', false);
+                if ($this->statusFilter === 'ACTIVE' || $this->statusFilter === 'active') {
+                    $q->where(function ($sub) {
+                        $sub->where('status', 'ACTIVE')->orWhere(function ($s) {
+                            $s->where('is_active', true)->whereNotIn('status', ['INACTIVE', 'MOVED']);
+                        });
+                    });
+                } elseif ($this->statusFilter === 'INACTIVE' || $this->statusFilter === 'inactive') {
+                    $q->where(function ($sub) {
+                        $sub->where('is_active', false)->orWhere('status', 'INACTIVE');
+                    });
+                } else {
+                    $q->where('status', $this->statusFilter);
                 }
             })
             ->when($this->search, function ($q) {

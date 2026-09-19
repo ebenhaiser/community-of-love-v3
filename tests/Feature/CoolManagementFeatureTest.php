@@ -17,6 +17,7 @@ use App\Livewire\Statistics\AttendanceStatistics;
 use App\Models\Activity;
 use App\Models\Attendance;
 use App\Models\Cool;
+use App\Models\CoolMember;
 use App\Models\Member;
 use App\Models\MemberMessage;
 use App\Models\QrAccess;
@@ -154,6 +155,101 @@ class CoolManagementFeatureTest extends TestCase
         $this->assertDatabaseHas('members', [
             'member_id' => $member->member_id,
             'is_deleted' => true,
+        ]);
+    }
+
+    public function test_member_status_update_and_sync(): void
+    {
+        $master = User::where('username', 'master')->first();
+        $this->actingAs($master);
+
+        $cool = Cool::first();
+
+        // 1. Create a member
+        $member = Member::create([
+            'member_code' => 'MBR-STATUS-TEST',
+            'name' => 'Stefanus Status',
+            'phone' => '08123456789',
+            'join_date' => '2026-09-19',
+            'status' => 'ACTIVE',
+            'is_active' => true,
+            'is_deleted' => false,
+        ]);
+
+        CoolMember::create([
+            'cool_id' => $cool->cool_id,
+            'member_id' => $member->member_id,
+            'start_date' => '2026-09-19',
+            'status' => 'ACTIVE',
+            'is_deleted' => false,
+        ]);
+
+        // 2. Open edit modal and update status to INACTIVE
+        Livewire::test(MemberIndex::class)
+            ->call('openEditModal', $member->member_id)
+            ->assertSet('status', 'ACTIVE')
+            ->assertSet('is_active', true)
+            ->set('status', 'INACTIVE')
+            ->assertSet('is_active', false)
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSee('Non-Aktif');
+
+        $this->assertDatabaseHas('members', [
+            'member_id' => $member->member_id,
+            'status' => 'INACTIVE',
+            'is_active' => false,
+        ]);
+
+        $this->assertDatabaseHas('cool_members', [
+            'member_id' => $member->member_id,
+            'cool_id' => $cool->cool_id,
+            'status' => 'INACTIVE',
+        ]);
+
+        // 3. Edit again to MOVED
+        Livewire::test(MemberIndex::class)
+            ->call('openEditModal', $member->member_id)
+            ->set('status', 'MOVED')
+            ->assertSet('is_active', false)
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSee('Pindah');
+
+        $this->assertDatabaseHas('members', [
+            'member_id' => $member->member_id,
+            'status' => 'MOVED',
+            'is_active' => false,
+        ]);
+
+        // 4. Edit again to NEW
+        Livewire::test(MemberIndex::class)
+            ->call('openEditModal', $member->member_id)
+            ->set('status', 'NEW')
+            ->assertSet('is_active', true)
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSee('Baru');
+
+        $this->assertDatabaseHas('members', [
+            'member_id' => $member->member_id,
+            'status' => 'NEW',
+            'is_active' => true,
+        ]);
+
+        // 5. Edit back to ACTIVE
+        Livewire::test(MemberIndex::class)
+            ->call('openEditModal', $member->member_id)
+            ->set('status', 'ACTIVE')
+            ->assertSet('is_active', true)
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSee('Aktif');
+
+        $this->assertDatabaseHas('members', [
+            'member_id' => $member->member_id,
+            'status' => 'ACTIVE',
+            'is_active' => true,
         ]);
     }
 
@@ -427,7 +523,9 @@ class CoolManagementFeatureTest extends TestCase
             ->call('deleteMessage', $msgCool2->message_id)
             ->assertForbidden();
 
-        // 10. EventIndex: Shepherd can view permitted events without SQL error, forbidden to create/edit/delete
+        // 10. EventIndex: Shepherd can view permitted events via HTTP GET without SQL error, forbidden to create/edit/delete
+        $this->get('/church-events')->assertOk()->assertSee('Event Gereja Lintas COOL');
+
         Livewire::test(EventIndex::class)
             ->assertOk()
             ->assertSee('Event Gereja Lintas COOL')
