@@ -22,10 +22,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
-Route::get('/', function () {
-    return 'Laravel is running!';
-});
-
 Route::get('/login', Login::class)->name('login')->middleware('guest');
 Route::get('/c/{qrToken}', CoolPortal::class)->name('cool.portal');
 
@@ -49,7 +45,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Dashboard
-    // Route::get('/', Dashboard::class)->name('dashboard');
+    Route::get('/', Dashboard::class)->name('dashboard');
     Route::get('/dashboard', function () {
         return redirect('/');
     });
