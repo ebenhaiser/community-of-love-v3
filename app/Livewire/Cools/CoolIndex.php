@@ -48,6 +48,11 @@ class CoolIndex extends Component
 
     public function openCreateModal(): void
     {
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            abort(403, 'Gembala COOL tidak memiliki izin menambahkan kelompok COOL baru.');
+        }
+
         $this->resetForm();
         $this->cool_code = 'COOL-SLM-'.str_pad((string) (Cool::count() + 1), 3, '0', STR_PAD_LEFT);
         $this->showModal = true;
@@ -55,6 +60,11 @@ class CoolIndex extends Component
 
     public function openEditModal(int $coolId): void
     {
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            abort(403, 'Hanya Master Administrator yang dapat mengedit data kelompok COOL.');
+        }
+
         $cool = Cool::findOrFail($coolId);
         $this->editingCoolId = $cool->cool_id;
         $this->cool_code = $cool->cool_code;
@@ -75,6 +85,11 @@ class CoolIndex extends Component
 
     public function save(): void
     {
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            abort(403, 'Gembala COOL tidak dapat menambah atau mengubah kelompok COOL.');
+        }
+
         $rules = [
             'cool_code' => 'required|string|max:50|unique:cools,cool_code,'.($this->editingCoolId ?? 'NULL').',cool_id',
             'name' => 'required|string|max:255',
@@ -120,6 +135,11 @@ class CoolIndex extends Component
 
     public function deleteCool(int $coolId): void
     {
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            abort(403, 'Hanya Master Administrator yang dapat menghapus kelompok COOL.');
+        }
+
         $cool = Cool::findOrFail($coolId);
         $cool->update([
             'is_deleted' => true,

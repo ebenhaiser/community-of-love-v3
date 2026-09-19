@@ -16,7 +16,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Layout('layouts.auth')]
+#[Layout('layouts.portal')]
 #[Title('Portal Jemaat COOL GBI Salemba')]
 class CoolPortal extends Component
 {

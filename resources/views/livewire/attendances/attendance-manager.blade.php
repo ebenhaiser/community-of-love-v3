@@ -67,25 +67,25 @@
           </div>
           <div class="col-md-6">
             <div class="row g-2 text-center">
-              <div class="col-3">
+              <div class="col-6 col-sm-3">
                 <div class="p-2 bg-white rounded shadow-sm border">
                   <div class="text-muted small">Anggota</div>
                   <div class="fs-5 fw-bold text-dark">{{ $stats['total'] }}</div>
                 </div>
               </div>
-              <div class="col-3">
+              <div class="col-6 col-sm-3">
                 <div class="p-2 bg-white rounded shadow-sm border border-success">
                   <div class="text-success small fw-semibold">Hadir</div>
                   <div class="fs-5 fw-bold text-success">{{ $stats['present'] }}</div>
                 </div>
               </div>
-              <div class="col-3">
+              <div class="col-6 col-sm-3">
                 <div class="p-2 bg-white rounded shadow-sm border">
                   <div class="text-warning small fw-semibold">Izin/Sakit</div>
                   <div class="fs-5 fw-bold text-warning">{{ $stats['excused'] + $stats['sick'] }}</div>
                 </div>
               </div>
-              <div class="col-3">
+              <div class="col-6 col-sm-3">
                 <div class="p-2 bg-white rounded shadow-sm border">
                   <div class="text-muted small">Tingkat</div>
                   <div class="fs-5 fw-bold text-primary">{{ $stats['percentage'] }}%</div>
@@ -106,9 +106,9 @@
               <tr>
                 <th style="width: 50px;">#</th>
                 <th>Nama Anggota</th>
-                <th class="text-center" style="width: 380px;">Status Kehadiran</th>
+                <th class="text-center text-nowrap" style="min-width: 320px;">Status Kehadiran</th>
                 <th>Catatan / Keterangan</th>
-                <th class="text-center">Waktu Presensi</th>
+                <th class="text-center text-nowrap">Waktu Presensi</th>
               </tr>
             </thead>
             <tbody>

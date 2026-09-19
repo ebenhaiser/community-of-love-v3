@@ -16,14 +16,14 @@
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
       <div class="row g-3 align-items-center">
-        <div class="col-md-5">
+        <div class="col-12 col-md-5">
           <div class="input-group">
             <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
             <input type="text" class="form-control" wire:model.live.debounce.300ms="search"
               placeholder="Cari dalam isi pesan atau nama...">
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-sm-6 col-md-4">
           <select class="form-select" wire:model.live="coolFilter">
             <option value="">Semua Kelompok COOL</option>
             @foreach ($cools as $c)
@@ -31,7 +31,7 @@
             @endforeach
           </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
           <select class="form-select" wire:model.live="statusFilter">
             <option value="">Semua Status Pesan</option>
             <option value="SENT">Belum Dibaca (Baru)</option>
@@ -104,7 +104,7 @@
                     <span class="badge bg-secondary">{{ $msg->status }}</span>
                   @endif
                 </td>
-                <td class="text-end">
+                <td class="text-end text-nowrap">
                   @if ($phone)
                     @php
                       $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
@@ -140,8 +140,8 @@
               </tr>
             @empty
               <tr>
-                <td colspan="5" class="text-center text-muted py-4">
-                  <i class="bi bi-chat-square-dots fs-2 d-block mb-2 text-secondary"></i>
+                <td colspan="5" class="text-center text-muted py-5">
+                  <i class="bi bi-chat-square-dots fs-1 d-block mb-2 text-secondary"></i>
                   Tidak ada pesan masuk dari jemaat.
                 </td>
               </tr>

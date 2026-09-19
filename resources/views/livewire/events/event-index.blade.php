@@ -5,23 +5,25 @@
       <h1 class="page-title">Event Gereja Lintas COOL</h1>
       <p class="page-subtitle">Koordinasi kegiatan gabungan, ibadah raya COOL, retreat, dan seminar GBI Salemba</p>
     </div>
-    <button type="button" class="btn btn-success" wire:click="openCreateModal">
-      <i class="bi bi-calendar2-plus-fill me-1"></i> Buat Event Baru
-    </button>
+    @if (!$isShepherd)
+      <button type="button" class="btn btn-success" wire:click="openCreateModal">
+        <i class="bi bi-calendar2-plus-fill me-1"></i> Buat Event Baru
+      </button>
+    @endif
   </div>
 
   <!-- Filter Toolbar -->
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
       <div class="row g-3 align-items-center">
-        <div class="col-md-8">
+        <div class="col-12 col-md-7">
           <div class="input-group">
             <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
             <input type="text" class="form-control" wire:model.live.debounce.300ms="search"
               placeholder="Cari event gereja berdasarkan judul, kode, atau lokasi...">
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-md-5">
           <select class="form-select" wire:model.live="statusFilter">
             <option value="">Semua Status Pelaksanaan</option>
             <option value="SCHEDULED">SCHEDULED (Terjadwal)</option>
@@ -103,21 +105,25 @@
                     <span class="badge bg-info text-dark">Terjadwal</span>
                   @endif
                 </td>
-                <td class="text-end">
-                  <button type="button" class="btn btn-sm btn-outline-secondary me-1" wire:click="openEditModal({{ $evt->event_id }})" title="Ubah Event">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-danger"
-                    onclick="if(confirm('Hapus event \'{{ addslashes($evt->name) }}\'?')) { @this.call('deleteEvent', {{ $evt->event_id }}) }"
-                    title="Hapus">
-                    <i class="bi bi-trash"></i>
-                  </button>
+                <td class="text-end text-nowrap">
+                  @if (!$isShepherd)
+                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" wire:click="openEditModal({{ $evt->event_id }})" title="Ubah Event">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                      onclick="if(confirm('Hapus event \'{{ addslashes($evt->name) }}\'?')) { @this.call('deleteEvent', {{ $evt->event_id }}) }"
+                      title="Hapus">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  @else
+                    <span class="badge bg-light text-muted border">Informasi Event</span>
+                  @endif
                 </td>
               </tr>
             @empty
               <tr>
-                <td colspan="6" class="text-center text-muted py-4">
-                  <i class="bi bi-calendar-event fs-2 d-block mb-2 text-secondary"></i>
+                <td colspan="6" class="text-center text-muted py-5">
+                  <i class="bi bi-calendar-event fs-1 d-block mb-2 text-secondary"></i>
                   Tidak ada event gereja lintas COOL yang ditemukan.
                 </td>
               </tr>
@@ -135,14 +141,15 @@
 
   <!-- Modal Tambah / Edit Event -->
   @if ($showModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" aria-modal="true" role="dialog">
+    <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
       <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow">
-          <div class="modal-header bg-success text-white">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header">
             <h5 class="modal-title">
+              <i class="bi bi-buildings-fill text-lime me-2"></i>
               {{ $editingEventId ? 'Ubah Data Event Gereja' : 'Buat Event Gereja Lintas COOL Baru' }}
             </h5>
-            <button type="button" class="btn-close btn-close-white" wire:click="$set('showModal', false)"></button>
+            <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
           </div>
           <form wire:submit="save">
             <div class="modal-body">

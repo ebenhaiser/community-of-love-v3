@@ -14,14 +14,14 @@
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
       <div class="row g-3 align-items-center">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
           <div class="input-group">
             <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
             <input type="text" class="form-control" wire:model.live.debounce.300ms="search"
               placeholder="Cari materi atau topik...">
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-sm-6 col-md-4">
           <select class="form-select" wire:model.live="coolFilter">
             <option value="">Semua Kelompok COOL</option>
             @foreach ($cools as $c)
@@ -29,7 +29,7 @@
             @endforeach
           </select>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-sm-6 col-md-4">
           <select class="form-select" wire:model.live="activity_id">
             <option value="">Semua Pertemuan / Kegiatan</option>
             @foreach ($activities as $act)
@@ -107,7 +107,7 @@
                   <div class="small fw-medium">{{ $mat->uploader->full_name ?? 'Admin' }}</div>
                   <div class="text-muted small">{{ $mat->date_uploaded ? $mat->date_uploaded->format('d M Y H:i') : '-' }}</div>
                 </td>
-                <td class="text-end">
+                <td class="text-end text-nowrap">
                   @if ($mat->material_type === 'LINK' && $mat->external_url)
                     <a href="{{ $mat->external_url }}" target="_blank" class="btn btn-sm btn-outline-primary me-1" title="Buka Tautan">
                       <i class="bi bi-box-arrow-up-right me-1"></i> Buka Link
@@ -126,8 +126,8 @@
               </tr>
             @empty
               <tr>
-                <td colspan="6" class="text-center text-muted py-4">
-                  <i class="bi bi-folder-x fs-2 d-block mb-2 text-secondary"></i>
+                <td colspan="6" class="text-center text-muted py-5">
+                  <i class="bi bi-folder-x fs-1 d-block mb-2 text-secondary"></i>
                   Tidak ada materi atau dokumen yang cocok dengan filter saat ini.
                 </td>
               </tr>
@@ -145,12 +145,15 @@
 
   <!-- Modal Tambah Materi -->
   @if ($showModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" aria-modal="true" role="dialog">
+    <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-          <div class="modal-header bg-success text-white">
-            <h5 class="modal-title">Unggah Materi Pertemuan COOL</h5>
-            <button type="button" class="btn-close btn-close-white" wire:click="$set('showModal', false)"></button>
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-file-earmark-text-fill text-lime me-2"></i>
+              Unggah Materi Pertemuan COOL
+            </h5>
+            <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
           </div>
           <form wire:submit="save">
             <div class="modal-body">

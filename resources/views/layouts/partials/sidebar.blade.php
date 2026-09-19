@@ -1,9 +1,14 @@
 <div class="sidebar-wrapper" id="sidebar">
-  <!-- Brand Logo / Identity -->
-  <a href="{{ url('/') }}" class="sidebar-brand text-decoration-none">
-    <i class="bi bi-heart-pulse-fill text-lime"></i>
-    <span>COOL Salemba</span>
-  </a>
+  <!-- Brand Logo & Mobile Close Button -->
+  <div class="sidebar-header-row">
+    <a href="{{ url('/') }}" class="sidebar-brand text-decoration-none mb-0">
+      <i class="bi bi-heart-pulse-fill text-lime"></i>
+      <span>COOL Salemba</span>
+    </a>
+    <button type="button" class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Tutup Menu">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
 
   <!-- Navigation Menu -->
   <div class="flex-grow-1 overflow-y-auto">
@@ -121,8 +126,8 @@
     <img src="{{ asset('spark-admin-1.0.0/assets/images/avatar.png') }}" alt="Profile" class="sidebar-profile-img"
       onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'">
     <div class="sidebar-profile-info">
-      <div class="sidebar-profile-name">{{ auth()->user()->full_name ?? 'Master Administrator' }}</div>
-      <div class="sidebar-profile-email">{{ auth()->user()->role->name ?? 'MASTER' }}</div>
+      <div class="sidebar-profile-name">{{ auth()->user()->full_name ?? auth()->user()->username ?? 'Pengguna' }}</div>
+      <div class="sidebar-profile-email">{{ (auth()->user()->role && auth()->user()->role->name === 'SHEPHERD') ? 'Gembala COOL' : 'Master Administrator' }}</div>
     </div>
   </div>
 </div>

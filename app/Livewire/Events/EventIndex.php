@@ -62,6 +62,11 @@ class EventIndex extends Component
 
     public function openCreateModal(): void
     {
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            abort(403, 'Hanya Master Administrator yang dapat membuat event gereja baru.');
+        }
+
         $this->resetForm();
         $this->event_code = 'EVT-'.date('Y').'-'.str_pad((string) (ChurchEvent::count() + 1), 3, '0', STR_PAD_LEFT);
         $this->event_date = date('Y-m-d');
@@ -73,6 +78,11 @@ class EventIndex extends Component
 
     public function openEditModal(int $eventId): void
     {
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            abort(403, 'Hanya Master Administrator yang dapat mengedit event gereja.');
+        }
+
         $event = ChurchEvent::with(['cools' => fn ($q) => $q->wherePivot('is_deleted', false)])->findOrFail($eventId);
         $this->editingEventId = $event->event_id;
         $this->event_code = $event->event_code;
@@ -100,6 +110,11 @@ class EventIndex extends Component
 
     public function save(): void
     {
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            abort(403, 'Akses ditolak.');
+        }
+
         $rules = [
             'event_code' => 'required|string|max:50|unique:church_events,event_code,'.($this->editingEventId ?? 'NULL').',event_id',
             'name' => 'required|string|max:255',
@@ -184,6 +199,11 @@ class EventIndex extends Component
 
     public function deleteEvent(int $eventId): void
     {
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            abort(403, 'Hanya Master Administrator yang dapat menghapus event gereja.');
+        }
+
         $event = ChurchEvent::findOrFail($eventId);
         $userId = Auth::id() ?? 1;
 
@@ -204,7 +224,28 @@ class EventIndex extends Component
 
     public function render()
     {
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        $shepherdCoolIds = [];
+        if ($isShepherd) {
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)
+                ->where('is_deleted', false)
+                ->pluck('cool_id')
+                ->toArray();
+        }
+
         $events = ChurchEvent::where('is_deleted', false)
+            ->when($isShepherd, function ($q) use ($shepherdCoolIds) {
+                $q->where(function ($sub) use ($shepherdCoolIds) {
+                    // Open to all COOLs (no specific cools attached) OR attached to this shepherd's COOL
+                    $sub->whereDoesntHave('cools', fn ($c) => $c->where('event_cools.is_deleted', false))
+                        ->orWhereHas('cools', function ($c) use ($shepherdCoolIds) {
+                            $c->where('event_cools.is_deleted', false)
+                                ->whereIn('cools.cool_id', $shepherdCoolIds);
+                        });
+                });
+            })
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->search, function ($q) {
                 $q->where(function ($sub) {
@@ -213,15 +254,18 @@ class EventIndex extends Component
                         ->orWhere('location', 'like', "%{$this->search}%");
                 });
             })
-            ->with(['cools' => fn ($q) => $q->wherePivot('is_deleted', false)])
+            ->with(['cools' => fn ($q) => $q->where('event_cools.is_deleted', false)])
             ->withCount([
-                'cools as participating_cools_count' => fn ($q) => $q->wherePivot('is_deleted', false),
+                'cools as participating_cools_count' => fn ($q) => $q->where('event_cools.is_deleted', false),
             ])
             ->orderByDesc('event_date')
             ->paginate(10);
 
-        $allCools = Cool::where('is_deleted', false)->orderBy('name')->get();
+        $allCools = Cool::where('is_deleted', false)
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->orderBy('name')
+            ->get();
 
-        return view('livewire.events.event-index', compact('events', 'allCools'));
+        return view('livewire.events.event-index', compact('events', 'allCools', 'isShepherd'));
     }
 }

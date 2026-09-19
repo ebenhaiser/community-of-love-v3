@@ -14,14 +14,14 @@
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
       <div class="row g-3 align-items-center">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
           <div class="input-group">
             <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
             <input type="text" class="form-control" wire:model.live.debounce.300ms="search"
               placeholder="Cari kegiatan, lokasi, topik...">
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
           <select class="form-select" wire:model.live="coolFilter">
             <option value="">Semua Kelompok COOL</option>
             @foreach ($cools as $c)
@@ -29,7 +29,7 @@
             @endforeach
           </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
           <select class="form-select" wire:model.live="typeFilter">
             <option value="">Semua Jenis Kegiatan</option>
             @foreach ($activityTypes as $type)
@@ -37,7 +37,7 @@
             @endforeach
           </select>
         </div>
-        <div class="col-md-2">
+        <div class="col-12 col-md-2">
           <select class="form-select" wire:model.live="statusFilter">
             <option value="">Semua Status</option>
             <option value="SCHEDULED">SCHEDULED</option>
@@ -114,7 +114,7 @@
                     <span class="badge bg-info text-dark">Terjadwal</span>
                   @endif
                 </td>
-                <td class="text-end">
+                <td class="text-end text-nowrap">
                   <a href="{{ url('/attendances?activity_id=' . $act->activity_id) }}" class="btn btn-sm btn-success me-1" title="Isi & Kelola Presensi">
                     <i class="bi bi-check2-square me-1"></i> Presensi
                   </a>
@@ -133,8 +133,8 @@
               </tr>
             @empty
               <tr>
-                <td colspan="6" class="text-center text-muted py-4">
-                  <i class="bi bi-calendar-x fs-2 d-block mb-2 text-secondary"></i>
+                <td colspan="6" class="text-center text-muted py-5">
+                  <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary"></i>
                   Tidak ada kegiatan COOL yang ditemukan.
                 </td>
               </tr>
@@ -152,14 +152,15 @@
 
   <!-- Modal Tambah / Edit Kegiatan -->
   @if ($showModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" aria-modal="true" role="dialog">
+    <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
       <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow">
-          <div class="modal-header bg-success text-white">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header">
             <h5 class="modal-title">
+              <i class="bi bi-calendar-event-fill text-lime me-2"></i>
               {{ $editingActivityId ? 'Ubah Data Kegiatan COOL' : 'Jadwalkan Kegiatan COOL Baru' }}
             </h5>
-            <button type="button" class="btn-close btn-close-white" wire:click="$set('showModal', false)"></button>
+            <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
           </div>
           <form wire:submit="save">
             <div class="modal-body">

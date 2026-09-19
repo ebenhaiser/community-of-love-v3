@@ -14,7 +14,7 @@
         $qr = $cool->qrAccess;
         $portalUrl = $qr ? url('/c/' . $qr->qr_token) : null;
       @endphp
-      <div class="col-md-6 col-lg-4" wire:key="qr-card-{{ $cool->cool_id }}">
+      <div class="col-12 col-md-6 col-lg-4" wire:key="qr-card-{{ $cool->cool_id }}">
         <div class="card shadow-sm border-0 h-100">
           <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
             <span class="badge bg-light text-dark border font-monospace">{{ $cool->cool_code }}</span>
@@ -81,12 +81,15 @@
 
   <!-- Modal Ganti PIN -->
   @if ($showPinModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" aria-modal="true" role="dialog">
+    <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
       <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content border-0 shadow">
-          <div class="modal-header bg-success text-white">
-            <h6 class="modal-title fw-bold">Ganti PIN Akses COOL</h6>
-            <button type="button" class="btn-close btn-close-white" wire:click="$set('showPinModal', false)"></button>
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold">
+              <i class="bi bi-key-fill text-lime me-2"></i>
+              Ganti PIN Akses COOL
+            </h6>
+            <button type="button" class="btn-close" wire:click="$set('showPinModal', false)"></button>
           </div>
           <form wire:submit="updatePin">
             <div class="modal-body text-center">

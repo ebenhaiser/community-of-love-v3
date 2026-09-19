@@ -41,9 +41,26 @@ class MessageInbox extends Component
         $this->resetPage();
     }
 
+    protected function authorizeMessage(MemberMessage $msg): void
+    {
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        if ($isShepherd) {
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)
+                ->where('is_deleted', false)
+                ->pluck('cool_id')
+                ->toArray();
+            if (! in_array($msg->cool_id, $shepherdCoolIds)) {
+                abort(403, 'Anda tidak memiliki akses ke pesan kelompok COOL ini.');
+            }
+        }
+    }
+
     public function markAsRead(int $messageId): void
     {
         $msg = MemberMessage::findOrFail($messageId);
+        $this->authorizeMessage($msg);
+
         $msg->update([
             'status' => 'READ',
             'read_at' => now(),
@@ -55,6 +72,8 @@ class MessageInbox extends Component
     public function markAsResponded(int $messageId): void
     {
         $msg = MemberMessage::findOrFail($messageId);
+        $this->authorizeMessage($msg);
+
         $msg->update([
             'status' => 'RESPONDED',
             'read_at' => $msg->read_at ?? now(),
@@ -66,6 +85,8 @@ class MessageInbox extends Component
     public function deleteMessage(int $messageId): void
     {
         $msg = MemberMessage::findOrFail($messageId);
+        $this->authorizeMessage($msg);
+
         $msg->update([
             'is_deleted' => true,
             'deleted_by' => Auth::id() ?? 1,

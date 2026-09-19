@@ -70,12 +70,32 @@ class MemberIndex extends Component
         $this->resetForm();
         $this->member_code = 'MBR-'.date('Y').'-'.str_pad((string) (Member::count() + 1), 4, '0', STR_PAD_LEFT);
         $this->join_date = date('Y-m-d');
+
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id) {
+            $firstCool = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->first();
+            if ($firstCool) {
+                $this->cool_id = $firstCool->cool_id;
+            }
+        }
+
         $this->showModal = true;
     }
 
     public function openEditModal(int $memberId): void
     {
         $member = Member::with(['coolMembers' => fn ($q) => $q->where('is_deleted', false)])->findOrFail($memberId);
+
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        if ($isShepherd) {
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
+            $belongsToShepherd = $member->coolMembers()->whereIn('cool_id', $shepherdCoolIds)->where('is_deleted', false)->exists();
+            if (! $belongsToShepherd) {
+                abort(403, 'Anda hanya dapat mengakses data anggota kelompok COOL Anda sendiri.');
+            }
+        }
+
         $this->editingMemberId = $member->member_id;
         $this->member_code = $member->member_code;
         $this->name = $member->name;
@@ -131,9 +151,33 @@ class MemberIndex extends Component
         ];
 
         $userId = Auth::id() ?? 1;
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($isShepherd) {
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
+            if (! $this->cool_id || ! in_array($this->cool_id, $shepherdCoolIds)) {
+                $this->addError('cool_id', 'Anda hanya dapat menugaskan anggota ke kelompok COOL Anda sendiri.');
+
+                return;
+            }
+        }
 
         if ($this->editingMemberId) {
             $member = Member::findOrFail($this->editingMemberId);
+
+            if ($isShepherd) {
+                $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
+                $belongsToShepherd = CoolMember::where('member_id', $member->member_id)
+                    ->whereIn('cool_id', $shepherdCoolIds)
+                    ->where('is_deleted', false)
+                    ->exists();
+
+                if (! $belongsToShepherd) {
+                    abort(403, 'Anda hanya dapat mengedit anggota kelompok COOL Anda sendiri.');
+                }
+            }
+
             $member->update(array_merge($data, [
                 'modified_by' => $userId,
                 'date_modified' => now(),
@@ -197,6 +241,16 @@ class MemberIndex extends Component
 
     public function deleteMember(int $memberId): void
     {
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        if ($isShepherd) {
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
+            $belongs = CoolMember::where('member_id', $memberId)->whereIn('cool_id', $shepherdCoolIds)->where('is_deleted', false)->exists();
+            if (! $belongs) {
+                abort(403, 'Akses ditolak.');
+            }
+        }
+
         $member = Member::findOrFail($memberId);
         $userId = Auth::id() ?? 1;
 

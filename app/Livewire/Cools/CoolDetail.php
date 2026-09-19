@@ -21,37 +21,55 @@ class CoolDetail extends Component
 
     public string $newPin = '';
 
-    public function mount(int $id): void
+    public function mount(int $coolId = 0, ?int $id = null): void
     {
-        $this->coolId = $id;
+        $this->coolId = $coolId ?: ($id ?? 0);
+
+        $cool = Cool::findOrFail($this->coolId);
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            if ($cool->shepherd_id !== $user->shepherd_id) {
+                abort(403, 'Anda hanya dapat mengakses kelompok COOL yang Anda gembalakan.');
+            }
+        }
     }
 
     public function updatePin(): void
     {
+        $cool = Cool::findOrFail($this->coolId);
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $cool->shepherd_id !== $user->shepherd_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $this->validate([
-            'newPin' => 'required|string|min:4|max:10',
+            'newPin' => 'required|digits:6',
         ], [
             'newPin.required' => 'PIN baru wajib diisi.',
-            'newPin.min' => 'PIN minimal 4 karakter.',
+            'newPin.digits' => 'PIN harus terdiri dari 6 angka.',
         ]);
 
-        $qr = QrAccess::firstOrCreate(
-            ['cool_id' => $this->coolId, 'is_deleted' => false],
-            [
+        $userId = Auth::id() ?? 1;
+        $qr = QrAccess::where('cool_id', $this->coolId)->where('is_deleted', false)->first();
+
+        if ($qr) {
+            $qr->update([
+                'pin_hash' => Hash::make($this->newPin),
+                'modified_by' => $userId,
+                'date_modified' => now(),
+            ]);
+        } else {
+            QrAccess::create([
+                'cool_id' => $this->coolId,
                 'access_code' => 'COOL-'.$this->coolId.'-QR',
                 'qr_token' => 'qr_'.Str::random(24),
                 'pin_hash' => Hash::make($this->newPin),
                 'is_active' => true,
-                'created_by' => Auth::id() ?? 1,
+                'is_deleted' => false,
+                'created_by' => $userId,
                 'date_created' => now(),
-            ]
-        );
-
-        $qr->update([
-            'pin_hash' => Hash::make($this->newPin),
-            'modified_by' => Auth::id() ?? 1,
-            'date_modified' => now(),
-        ]);
+            ]);
+        }
 
         $this->newPin = '';
         session()->flash('success', 'PIN keamanan akses QR berhasil diperbarui.');
@@ -59,6 +77,12 @@ class CoolDetail extends Component
 
     public function regenerateQrToken(): void
     {
+        $cool = Cool::findOrFail($this->coolId);
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $cool->shepherd_id !== $user->shepherd_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $qr = QrAccess::where('cool_id', $this->coolId)->where('is_deleted', false)->first();
         if ($qr) {
             $qr->update([
@@ -74,9 +98,9 @@ class CoolDetail extends Component
     {
         $cool = Cool::with([
             'shepherd',
-            'coolMembers' => fn ($q) => $q->where('is_deleted', false)->where('status', 'ACTIVE')->with('member'),
-            'activities' => fn ($q) => $q->where('is_deleted', false)->with(['activityType', 'attendances'])->orderByDesc('activity_date'),
-            'qrAccesses' => fn ($q) => $q->where('is_deleted', false)->latest('qr_access_id'),
+            'coolMembers' => fn ($q) => $q->where('cool_members.is_deleted', false)->where('status', 'ACTIVE')->with('member'),
+            'activities' => fn ($q) => $q->where('activities.is_deleted', false)->with(['activityType', 'attendances'])->orderByDesc('activity_date'),
+            'qrAccesses' => fn ($q) => $q->where('qr_accesses.is_deleted', false)->latest('qr_access_id'),
         ])->findOrFail($this->coolId);
 
         $activeQr = $cool->qrAccesses->first();

@@ -38,12 +38,23 @@ class ShepherdIndex extends Component
 
     public function openCreateModal(): void
     {
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            abort(403, 'Hanya Master Administrator yang dapat menambahkan Gembala baru.');
+        }
+
         $this->resetForm();
         $this->showModal = true;
     }
 
     public function openEditModal(int $shepherdId): void
     {
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        if ($isShepherd && $shepherdId !== $user->shepherd_id) {
+            abort(403, 'Anda hanya dapat memperbarui data profil Anda sendiri.');
+        }
+
         $shepherd = Shepherd::findOrFail($shepherdId);
         $this->editingShepherdId = $shepherd->shepherd_id;
         $this->name = $shepherd->name;
@@ -63,6 +74,13 @@ class ShepherdIndex extends Component
 
     public function save(): void
     {
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($isShepherd && (! $this->editingShepherdId || $this->editingShepherdId !== $user->shepherd_id)) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $this->validate([
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:50',
@@ -102,6 +120,11 @@ class ShepherdIndex extends Component
 
     public function deleteShepherd(int $shepherdId): void
     {
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD') {
+            abort(403, 'Hanya Master Administrator yang dapat menghapus data Gembala.');
+        }
+
         $shepherd = Shepherd::findOrFail($shepherdId);
         $shepherd->update([
             'is_deleted' => true,
@@ -114,7 +137,11 @@ class ShepherdIndex extends Component
 
     public function render()
     {
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
         $shepherds = Shepherd::where('is_deleted', false)
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
             ->when($this->search, function ($q) {
                 $q->where(function ($sub) {
                     $sub->where('name', 'like', "%{$this->search}%")
@@ -126,6 +153,6 @@ class ShepherdIndex extends Component
             ->orderBy('name')
             ->paginate(10);
 
-        return view('livewire.shepherds.shepherd-index', compact('shepherds'));
+        return view('livewire.shepherds.shepherd-index', compact('shepherds', 'isShepherd'));
     }
 }

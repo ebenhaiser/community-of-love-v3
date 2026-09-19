@@ -16,7 +16,7 @@
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
       <div class="row g-3 align-items-center">
-        <div class="col-md-6">
+        <div class="col-12 {{ !$isShepherd ? 'col-md-5' : 'col-md-8' }}">
           <div class="input-group">
             <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
             <input type="text" class="form-control" wire:model.live.debounce.300ms="search"
@@ -24,7 +24,7 @@
           </div>
         </div>
         @if (!$isShepherd)
-          <div class="col-md-4">
+          <div class="col-12 col-md-4">
             <select class="form-select" wire:model.live="shepherdFilter">
               <option value="">Semua Gembala</option>
               @foreach ($shepherds as $shep)
@@ -33,8 +33,10 @@
             </select>
           </div>
         @endif
-        <div class="col-md-2 text-end">
-          <span class="text-muted small">Total: <strong>{{ $cools->total() }}</strong> kelompok</span>
+        <div class="col-12 {{ !$isShepherd ? 'col-md-3' : 'col-md-4' }} text-md-end text-start">
+          <span class="badge bg-light text-secondary border px-3 py-2">
+            <i class="bi bi-collection me-1 text-success"></i> Total: <strong>{{ $cools->total() }}</strong> Kelompok
+          </span>
         </div>
       </div>
     </div>
@@ -85,12 +87,12 @@
                 </td>
                 <td>
                   @if ($cool->is_active)
-                    <span class="badge bg-success">Aktif</span>
+                    <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Aktif</span>
                   @else
-                    <span class="badge bg-secondary">Non-Aktif</span>
+                    <span class="badge bg-secondary-subtle text-secondary">Non-Aktif</span>
                   @endif
                 </td>
-                <td class="text-end">
+                <td class="text-end text-nowrap">
                   <a href="{{ url('/cools/' . $cool->cool_id) }}" class="btn btn-sm btn-outline-primary me-1" title="Lihat Detail">
                     <i class="bi bi-eye"></i> Detail
                   </a>
@@ -108,8 +110,8 @@
               </tr>
             @empty
               <tr>
-                <td colspan="6" class="text-center text-muted py-4">
-                  <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                <td colspan="6" class="text-center text-muted py-5">
+                  <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
                   Tidak ada data kelompok COOL yang ditemukan.
                 </td>
               </tr>
@@ -127,14 +129,15 @@
 
   <!-- Modal Tambah / Edit COOL -->
   @if ($showModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" aria-modal="true" role="dialog">
+    <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-          <div class="modal-header bg-success text-white">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header">
             <h5 class="modal-title">
+              <i class="bi bi-people-fill text-lime me-2"></i>
               {{ $editingCoolId ? 'Ubah Data Kelompok COOL' : 'Tambah Kelompok COOL Baru' }}
             </h5>
-            <button type="button" class="btn-close btn-close-white" wire:click="$set('showModal', false)"></button>
+            <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
           </div>
           <form wire:submit="save">
             <div class="modal-body">

@@ -14,14 +14,14 @@
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
       <div class="row g-3 align-items-center">
-        <div class="col-md-5">
+        <div class="col-12 col-md-5">
           <div class="input-group">
             <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
             <input type="text" class="form-control" wire:model.live.debounce.300ms="search"
               placeholder="Cari nama, ID anggota, no HP, email...">
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
           <select class="form-select" wire:model.live="coolFilter">
             <option value="">Semua Kelompok COOL</option>
             @foreach ($cools as $c)
@@ -29,15 +29,17 @@
             @endforeach
           </select>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-md-2">
           <select class="form-select" wire:model.live="statusFilter">
             <option value="">Semua Status</option>
             <option value="active">Aktif</option>
             <option value="inactive">Non-Aktif</option>
           </select>
         </div>
-        <div class="col-md-2 text-end">
-          <span class="text-muted small">Total: <strong>{{ $members->total() }}</strong> anggota</span>
+        <div class="col-12 col-md-2 text-md-end text-start">
+          <span class="badge bg-light text-secondary border px-3 py-2">
+            <i class="bi bi-people me-1 text-success"></i> <strong>{{ $members->total() }}</strong> Anggota
+          </span>
         </div>
       </div>
     </div>
@@ -119,7 +121,7 @@
                     <span class="badge bg-secondary">Non-Aktif</span>
                   @endif
                 </td>
-                <td class="text-end">
+                <td class="text-end text-nowrap">
                   <button type="button" class="btn btn-sm btn-outline-secondary me-1" wire:click="openEditModal({{ $member->member_id }})" title="Ubah Data">
                     <i class="bi bi-pencil"></i>
                   </button>
@@ -132,8 +134,8 @@
               </tr>
             @empty
               <tr>
-                <td colspan="6" class="text-center text-muted py-4">
-                  <i class="bi bi-person-x fs-2 d-block mb-2 text-secondary"></i>
+                <td colspan="6" class="text-center text-muted py-5">
+                  <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>
                   Tidak ada data anggota yang cocok dengan pencarian / filter.
                 </td>
               </tr>
@@ -151,14 +153,15 @@
 
   <!-- Modal Tambah / Edit Anggota -->
   @if ($showModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" aria-modal="true" role="dialog">
+    <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-          <div class="modal-header bg-success text-white">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header">
             <h5 class="modal-title">
+              <i class="bi bi-person-fill text-lime me-2"></i>
               {{ $editingMemberId ? 'Ubah Data Anggota' : 'Tambah Anggota COOL Baru' }}
             </h5>
-            <button type="button" class="btn-close btn-close-white" wire:click="$set('showModal', false)"></button>
+            <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
           </div>
           <form wire:submit="save">
             <div class="modal-body">

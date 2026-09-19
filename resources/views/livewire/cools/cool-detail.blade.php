@@ -1,30 +1,39 @@
 <div>
   <!-- Header & Navigation -->
-  <div class="mb-4 d-flex justify-content-between align-items-center">
+  <div class="mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
     <div>
       <a href="{{ url('/cools') }}" class="btn btn-sm btn-outline-secondary mb-2">
         <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar COOL
       </a>
       <h1 class="page-title mb-1">{{ $cool->name }}</h1>
-      <span class="badge bg-light text-dark border font-monospace me-2">{{ $cool->cool_code }}</span>
-      @if ($cool->is_active)
-        <span class="badge bg-success">Aktif</span>
-      @else
-        <span class="badge bg-secondary">Non-Aktif</span>
-      @endif
+      <div class="d-flex align-items-center gap-2 mt-1">
+        <span class="badge bg-light text-dark border font-monospace">{{ $cool->cool_code }}</span>
+        @if ($cool->is_active)
+          <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Aktif</span>
+        @else
+          <span class="badge bg-secondary-subtle text-secondary">Non-Aktif</span>
+        @endif
+      </div>
     </div>
-    <div>
-      <a href="{{ url('/activities?coolFilter=' . $cool->cool_id) }}" class="btn btn-outline-primary me-1">
+    <div class="w-100 w-sm-auto text-start text-sm-end">
+      <a href="{{ url('/activities?coolFilter=' . $cool->cool_id) }}" class="btn btn-success">
         <i class="bi bi-calendar-plus me-1"></i> Buat Kegiatan
       </a>
     </div>
   </div>
 
+  @if (session()->has('success'))
+    <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  @endif
+
   <!-- Profile Card -->
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
       <div class="row g-4 align-items-center">
-        <div class="col-md-6 border-end">
+        <div class="col-12 col-md-6 border-bottom border-bottom-md-0 pb-3 pb-md-0">
           <h6 class="text-muted text-uppercase small fw-bold mb-2">Gembala Pembina</h6>
           <div class="d-flex align-items-center">
             <div class="bg-success-subtle text-success p-3 rounded-circle me-3">
@@ -33,8 +42,20 @@
             <div>
               <h5 class="fw-bold mb-0">{{ $cool->shepherd->name ?? 'Belum Ditentukan' }}</h5>
               <p class="text-muted mb-0 small">
-                <i class="bi bi-telephone me-1"></i> {{ $cool->shepherd->phone ?? '-' }} •
-                <i class="bi bi-envelope me-1"></i> {{ $cool->shepherd->email ?? '-' }}
+                @if ($cool->shepherd && $cool->shepherd->phone)
+                  @php
+                    $cleanPhone = preg_replace('/[^0-9]/', '', $cool->shepherd->phone);
+                    if (str_starts_with($cleanPhone, '0')) {
+                        $cleanPhone = '62' . substr($cleanPhone, 1);
+                    }
+                  @endphp
+                  <a href="https://wa.me/{{ $cleanPhone }}" target="_blank" class="text-decoration-none text-success fw-medium me-2">
+                    <i class="bi bi-whatsapp me-1"></i>{{ $cool->shepherd->phone }}
+                  </a>
+                @endif
+                @if ($cool->shepherd && $cool->shepherd->email)
+                  <span class="text-muted"><i class="bi bi-envelope me-1"></i>{{ $cool->shepherd->email }}</span>
+                @endif
               </p>
             </div>
           </div>
@@ -50,23 +71,23 @@
   </div>
 
   <!-- Tabs Navigation -->
-  <ul class="nav nav-tabs mb-4">
-    <li class="nav-item">
+  <ul class="nav nav-tabs mb-4 flex-nowrap overflow-x-auto pb-1">
+    <li class="nav-item text-nowrap">
       <button class="nav-link {{ $activeTab === 'members' ? 'active fw-bold text-success' : 'text-muted' }}"
         type="button" wire:click="$set('activeTab', 'members')">
         <i class="bi bi-people-fill me-1"></i> Anggota Aktif ({{ $cool->coolMembers->count() }})
       </button>
     </li>
-    <li class="nav-item">
+    <li class="nav-item text-nowrap">
       <button class="nav-link {{ $activeTab === 'activities' ? 'active fw-bold text-success' : 'text-muted' }}"
         type="button" wire:click="$set('activeTab', 'activities')">
-        <i class="bi bi-calendar-event-fill me-1"></i> Jadwal & Riwayat Kegiatan ({{ $cool->activities->count() }})
+        <i class="bi bi-calendar-event-fill me-1"></i> Jadwal & Riwayat ({{ $cool->activities->count() }})
       </button>
     </li>
-    <li class="nav-item">
+    <li class="nav-item text-nowrap">
       <button class="nav-link {{ $activeTab === 'qr' ? 'active fw-bold text-success' : 'text-muted' }}"
         type="button" wire:click="$set('activeTab', 'qr')">
-        <i class="bi bi-qr-code-scan me-1"></i> Akses QR Code & PIN
+        <i class="bi bi-qr-code-scan me-1"></i> Akses QR & PIN
       </button>
     </li>
   </ul>
@@ -81,7 +102,7 @@
               <tr>
                 <th>Kode</th>
                 <th>Nama Anggota</th>
-                <th>No. Telepon</th>
+                <th>No. Telepon / WhatsApp</th>
                 <th>Email</th>
                 <th>Tgl Bergabung COOL</th>
                 <th>Status</th>
@@ -91,15 +112,32 @@
               @forelse ($cool->coolMembers as $cm)
                 <tr wire:key="cm-{{ $cm->cool_member_id }}">
                   <td><span class="badge bg-light text-dark border font-monospace">{{ $cm->member->member_code ?? '-' }}</span></td>
-                  <td class="fw-semibold">{{ $cm->member->name ?? '-' }}</td>
-                  <td>{{ $cm->member->phone ?? '-' }}</td>
+                  <td class="fw-semibold text-dark">{{ $cm->member->name ?? '-' }}</td>
+                  <td>
+                    @if ($cm->member && $cm->member->phone)
+                      @php
+                        $cleanMbrPhone = preg_replace('/[^0-9]/', '', $cm->member->phone);
+                        if (str_starts_with($cleanMbrPhone, '0')) {
+                            $cleanMbrPhone = '62' . substr($cleanMbrPhone, 1);
+                        }
+                      @endphp
+                      <a href="https://wa.me/{{ $cleanMbrPhone }}" target="_blank" class="text-decoration-none text-success">
+                        <i class="bi bi-whatsapp me-1"></i>{{ $cm->member->phone }}
+                      </a>
+                    @else
+                      <span class="text-muted small">-</span>
+                    @endif
+                  </td>
                   <td>{{ $cm->member->email ?? '-' }}</td>
-                  <td>{{ \Carbon\Carbon::parse($cm->start_date)->format('d M Y') }}</td>
+                  <td>{{ $cm->start_date ? \Carbon\Carbon::parse($cm->start_date)->format('d M Y') : '-' }}</td>
                   <td><span class="badge bg-success">Aktif</span></td>
                 </tr>
               @empty
                 <tr>
-                  <td colspan="6" class="text-center text-muted py-4">Belum ada anggota yang terdaftar pada kelompok COOL ini.</td>
+                  <td colspan="6" class="text-center text-muted py-4">
+                    <i class="bi bi-people fs-2 d-block mb-2 text-secondary"></i>
+                    Belum ada anggota terdaftar pada kelompok COOL ini.
+                  </td>
                 </tr>
               @endforelse
             </tbody>
@@ -109,7 +147,7 @@
     </div>
   @endif
 
-  <!-- Tab 2: Jadwal & Kegiatan -->
+  <!-- Tab 2: Jadwal & Riwayat Kegiatan -->
   @if ($activeTab === 'activities')
     <div class="card shadow-sm border-0">
       <div class="card-body p-0">
@@ -118,41 +156,50 @@
             <thead class="table-light">
               <tr>
                 <th>Nama Kegiatan</th>
-                <th>Jenis</th>
+                <th>Jenis Pertemuan</th>
                 <th>Tanggal & Waktu</th>
                 <th>Lokasi</th>
+                <th>Kehadiran</th>
                 <th>Status</th>
-                <th class="text-end">Presensi</th>
+                <th class="text-end">Aksi</th>
               </tr>
             </thead>
             <tbody>
               @forelse ($cool->activities as $act)
-                <tr wire:key="cool-act-{{ $act->activity_id }}">
-                  <td class="fw-semibold">{{ $act->name }}</td>
-                  <td><span class="badge bg-secondary-subtle text-dark">{{ $act->activityType->name ?? '-' }}</span></td>
+                <tr wire:key="act-{{ $act->activity_id }}">
+                  <td class="fw-semibold text-dark">{{ $act->name }}</td>
+                  <td><span class="badge bg-light text-dark border">{{ $act->activityType->name ?? 'Kegiatan' }}</span></td>
                   <td>
-                    {{ \Carbon\Carbon::parse($act->activity_date)->format('d M Y') }}
-                    <small class="text-muted d-block">{{ $act->start_time ? substr($act->start_time, 0, 5) : '-' }} WIB</small>
+                    <div class="fw-medium text-dark">{{ $act->activity_date ? $act->activity_date->format('d M Y') : '-' }}</div>
+                    <small class="text-muted">{{ $act->start_time ? substr((string) $act->start_time, 0, 5) : '19:00' }} WIB</small>
                   </td>
-                  <td>{{ $act->location ?? '-' }}</td>
+                  <td><span class="text-muted small">{{ $act->location ?: 'Online' }}</span></td>
+                  <td>
+                    <span class="badge bg-success-subtle text-success">
+                      {{ $act->attendances->where('status.code', 'PRESENT')->count() }} Hadir
+                    </span>
+                  </td>
                   <td>
                     @if ($act->status === 'COMPLETED')
-                      <span class="badge bg-success-subtle text-success">Selesai</span>
-                    @elseif ($act->status === 'SCHEDULED')
-                      <span class="badge bg-primary-subtle text-primary">Terjadwal</span>
+                      <span class="badge bg-success">Selesai</span>
+                    @elseif ($act->status === 'CANCELLED')
+                      <span class="badge bg-danger">Dibatalkan</span>
                     @else
-                      <span class="badge bg-light text-muted">{{ $act->status }}</span>
+                      <span class="badge bg-info text-dark">Terjadwal</span>
                     @endif
                   </td>
                   <td class="text-end">
-                    <a href="{{ url('/activities/' . $act->activity_id . '/attendance') }}" class="btn btn-sm btn-outline-success">
-                      <i class="bi bi-check2-square me-1"></i> Buka Presensi
+                    <a href="{{ url('/attendances?activity_id=' . $act->activity_id) }}" class="btn btn-sm btn-outline-success">
+                      <i class="bi bi-check2-square me-1"></i> Presensi
                     </a>
                   </td>
                 </tr>
               @empty
                 <tr>
-                  <td colspan="6" class="text-center text-muted py-4">Belum ada kegiatan yang dibuat untuk kelompok ini.</td>
+                  <td colspan="7" class="text-center text-muted py-4">
+                    <i class="bi bi-calendar-x fs-2 d-block mb-2 text-secondary"></i>
+                    Belum ada kegiatan yang dijadwalkan untuk kelompok ini.
+                  </td>
                 </tr>
               @endforelse
             </tbody>
@@ -166,21 +213,25 @@
   @if ($activeTab === 'qr')
     <div class="row g-4">
       <div class="col-md-6">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 h-100">
           <div class="card-header bg-white py-3 fw-bold">
             <i class="bi bi-qr-code me-1 text-success"></i> Tautan Akses Anggota
           </div>
           <div class="card-body text-center py-4">
             @if ($activeQr)
+              @php
+                $portalUrl = url('/c/' . $activeQr->qr_token);
+              @endphp
               <div class="p-3 border rounded bg-light d-inline-block mb-3">
-                <i class="bi bi-qr-code display-1 text-success"></i>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data={{ urlencode($portalUrl) }}"
+                  alt="QR Code {{ $cool->name }}" class="img-fluid rounded" style="width: 150px; height: 150px;">
               </div>
               <h6 class="fw-bold mb-1">{{ $activeQr->access_code }}</h6>
               <p class="small text-muted mb-3">Token: <code>{{ $activeQr->qr_token }}</code></p>
 
               <div class="input-group mb-3">
                 <input type="text" class="form-control font-monospace small" readonly
-                  value="{{ url('/c/' . $activeQr->qr_token) }}" id="qrUrlInput">
+                  value="{{ $portalUrl }}" id="qrUrlInput">
                 <button class="btn btn-outline-secondary" type="button"
                   onclick="navigator.clipboard.writeText(document.getElementById('qrUrlInput').value); alert('Tautan portal anggota disalin!')">
                   <i class="bi bi-clipboard"></i> Salin
@@ -188,7 +239,7 @@
               </div>
 
               <div class="d-flex justify-content-center gap-2">
-                <a href="{{ url('/c/' . $activeQr->qr_token) }}" target="_blank" class="btn btn-success btn-sm">
+                <a href="{{ $portalUrl }}" target="_blank" class="btn btn-success btn-sm">
                   <i class="bi bi-box-arrow-up-right me-1"></i> Buka Portal Anggota
                 </a>
                 <button type="button" class="btn btn-outline-secondary btn-sm" wire:click="regenerateQrToken"
@@ -204,7 +255,7 @@
       </div>
 
       <div class="col-md-6">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 h-100">
           <div class="card-header bg-white py-3 fw-bold">
             <i class="bi bi-key-fill me-1 text-success"></i> Keamanan PIN Kelompok
           </div>
@@ -215,15 +266,15 @@
 
             <form wire:submit="updatePin">
               <div class="mb-3">
-                <label for="newPin" class="form-label fw-semibold">Atur PIN Baru</label>
-                <input type="password" id="newPin" wire:model="newPin"
-                  class="form-control @error('newPin') is-invalid @enderror"
-                  placeholder="Masukkan 4-10 karakter PIN (contoh: 123456)">
+                <label for="newPin" class="form-label fw-semibold">Atur 6-Digit PIN Baru</label>
+                <input type="password" id="newPin" wire:model="newPin" maxlength="6"
+                  class="form-control form-control-lg text-center font-monospace tracking-widest @error('newPin') is-invalid @enderror"
+                  placeholder="&bull;&bull;&bull;&bull;&bull;&bull;">
                 @error('newPin') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 <small class="text-muted d-block mt-1">PIN disimpan dalam format hash aman (Bcrypt).</small>
               </div>
 
-              <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+              <button type="submit" class="btn btn-success" wire:loading.attr="disabled">
                 <span wire:loading.remove><i class="bi bi-shield-lock me-1"></i> Simpan PIN Baru</span>
                 <span wire:loading><i class="bi bi-arrow-repeat spin me-1"></i> Menyimpan...</span>
               </button>

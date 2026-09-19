@@ -100,7 +100,14 @@ class ActivityIndex extends Component
 
     public function openEditModal(int $activityId): void
     {
-        $activity = Activity::findOrFail($activityId);
+        $activity = Activity::with('cool')->findOrFail($activityId);
+
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        if ($isShepherd && $activity->cool && $activity->cool->shepherd_id !== $user->shepherd_id) {
+            abort(403, 'Anda hanya dapat mengakses kegiatan kelompok COOL Anda sendiri.');
+        }
+
         $this->editingActivityId = $activity->activity_id;
         $this->cool_id = $activity->cool_id;
         $this->activity_type_id = $activity->activity_type_id;
@@ -148,6 +155,17 @@ class ActivityIndex extends Component
         ]);
 
         $userId = Auth::id() ?? 1;
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($isShepherd) {
+            $cool = Cool::find($this->cool_id);
+            if (! $cool || $cool->shepherd_id !== $user->shepherd_id) {
+                $this->addError('cool_id', 'Anda hanya dapat menjadwalkan kegiatan untuk kelompok COOL Anda sendiri.');
+
+                return;
+            }
+        }
 
         $data = [
             'cool_id' => $this->cool_id,
@@ -162,7 +180,11 @@ class ActivityIndex extends Component
         ];
 
         if ($this->editingActivityId) {
-            $activity = Activity::findOrFail($this->editingActivityId);
+            $activity = Activity::with('cool')->findOrFail($this->editingActivityId);
+            if ($isShepherd && $activity->cool && $activity->cool->shepherd_id !== $user->shepherd_id) {
+                abort(403, 'Anda tidak memiliki akses untuk mengubah kegiatan kelompok COOL lain.');
+            }
+
             $activity->update(array_merge($data, [
                 'modified_by' => $userId,
                 'date_modified' => now(),
@@ -183,7 +205,14 @@ class ActivityIndex extends Component
 
     public function deleteActivity(int $activityId): void
     {
-        $activity = Activity::findOrFail($activityId);
+        $activity = Activity::with('cool')->findOrFail($activityId);
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($isShepherd && $activity->cool && $activity->cool->shepherd_id !== $user->shepherd_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $userId = Auth::id() ?? 1;
 
         $activity->update([

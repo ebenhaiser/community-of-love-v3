@@ -5,24 +5,28 @@
       <h1 class="page-title">Data Gembala COOL</h1>
       <p class="page-subtitle">Kelola data pembina dan penanggung jawab kelompok COOL GBI Salemba</p>
     </div>
-    <button type="button" class="btn btn-success" wire:click="openCreateModal">
-      <i class="bi bi-plus-lg me-1"></i> Tambah Gembala Baru
-    </button>
+    @if (!$isShepherd)
+      <button type="button" class="btn btn-success" wire:click="openCreateModal">
+        <i class="bi bi-plus-lg me-1"></i> Tambah Gembala Baru
+      </button>
+    @endif
   </div>
 
   <!-- Search Toolbar -->
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
       <div class="row g-3 align-items-center">
-        <div class="col-md-6">
+        <div class="col-12 col-md-8">
           <div class="input-group">
             <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
             <input type="text" class="form-control" wire:model.live.debounce.300ms="search"
               placeholder="Cari berdasarkan nama, nomor HP, atau email...">
           </div>
         </div>
-        <div class="col-md-6 text-end">
-          <span class="text-muted small">Total: <strong>{{ $shepherds->total() }}</strong> Gembala</span>
+        <div class="col-12 col-md-4 text-md-end text-start">
+          <span class="badge bg-light text-secondary border px-3 py-2">
+            <i class="bi bi-person-badge me-1 text-success"></i> Total: <strong>{{ $shepherds->total() }}</strong> Gembala
+          </span>
         </div>
       </div>
     </div>
@@ -82,21 +86,23 @@
                     <span class="badge bg-secondary">Non-Aktif</span>
                   @endif
                 </td>
-                <td class="text-end">
+                <td class="text-end text-nowrap">
                   <button type="button" class="btn btn-sm btn-outline-secondary me-1" wire:click="openEditModal({{ $shep->shepherd_id }})" title="Ubah">
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <button type="button" class="btn btn-sm btn-outline-danger"
-                    onclick="if(confirm('Apakah Anda yakin ingin menghapus data Gembala ini? Histori kelompok akan tetap tersimpan.')) { @this.call('deleteShepherd', {{ $shep->shepherd_id }}) }"
-                    title="Hapus">
-                    <i class="bi bi-trash"></i>
-                  </button>
+                  @if (!$isShepherd)
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                      onclick="if(confirm('Apakah Anda yakin ingin menghapus data Gembala ini? Histori kelompok akan tetap tersimpan.')) { @this.call('deleteShepherd', {{ $shep->shepherd_id }}) }"
+                      title="Hapus">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  @endif
                 </td>
               </tr>
             @empty
               <tr>
-                <td colspan="6" class="text-center text-muted py-4">
-                  <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                <td colspan="6" class="text-center text-muted py-5">
+                  <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>
                   Tidak ada data Gembala yang ditemukan.
                 </td>
               </tr>
@@ -114,14 +120,15 @@
 
   <!-- Modal Tambah / Edit Gembala -->
   @if ($showModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" aria-modal="true" role="dialog">
+    <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-          <div class="modal-header bg-success text-white">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header">
             <h5 class="modal-title">
+              <i class="bi bi-person-badge-fill text-lime me-2"></i>
               {{ $editingShepherdId ? 'Ubah Data Gembala COOL' : 'Tambah Gembala Baru' }}
             </h5>
-            <button type="button" class="btn-close btn-close-white" wire:click="$set('showModal', false)"></button>
+            <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
           </div>
           <form wire:submit="save">
             <div class="modal-body">

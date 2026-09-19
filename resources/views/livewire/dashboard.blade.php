@@ -13,9 +13,9 @@
   </div>
 
   <!-- Quick Info Stat Cards Row -->
-  <div class="row g-4 mb-4">
+  <div class="row g-3 g-md-4 mb-4">
     <!-- Stat Card 1: Green Alert Banner -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-12 col-sm-6 col-xl-3">
       <div class="card alert-green-card h-100">
         <div class="position-relative z-index-2">
           <span class="alert-green-badge">Aktif</span>
@@ -37,7 +37,7 @@
     </div>
 
     <!-- Stat Card 2: Gembala -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-12 col-sm-6 col-xl-3">
       <div class="card card-stat h-100 p-3">
         <div class="card-header border-0 p-0 mb-2">
           <span class="stat-label">Gembala COOL</span>
@@ -51,7 +51,7 @@
     </div>
 
     <!-- Stat Card 3: Anggota -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-12 col-sm-6 col-xl-3">
       <div class="card card-stat h-100 p-3">
         <div class="card-header border-0 p-0 mb-2">
           <span class="stat-label">Anggota Jemaat</span>
@@ -65,7 +65,7 @@
     </div>
 
     <!-- Stat Card 4: Persentase Kehadiran -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-12 col-sm-6 col-xl-3">
       <div class="card card-stat h-100 p-3">
         <div class="card-header border-0 p-0 mb-2">
           <span class="stat-label">Rata-Rata Kehadiran</span>
@@ -82,7 +82,7 @@
   <!-- Content Grid -->
   <div class="row g-4">
     <!-- Left Column: Daftar Kelompok COOL -->
-    <div class="col-lg-7">
+    <div class="col-12 col-lg-7">
       <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
           <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-success me-2"></i>Kelompok COOL</h5>
@@ -183,7 +183,7 @@
     </div>
 
     <!-- Right Column: Alert Ketidakhadiran & Akses Cepat -->
-    <div class="col-lg-5">
+    <div class="col-12 col-lg-5">
       <!-- Card Peringatan Ketidakhadiran (PRD FR-11 & FR-12) -->
       <div class="card border-warning shadow-sm mb-4">
         <div class="card-header bg-warning-subtle text-warning-emphasis fw-bold py-3 d-flex justify-content-between align-items-center">

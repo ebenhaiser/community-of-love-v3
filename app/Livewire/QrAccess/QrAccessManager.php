@@ -26,6 +26,13 @@ class QrAccessManager extends Component
     public function openPinModal(int $qrAccessId): void
     {
         $qr = QrAccess::with('cool')->findOrFail($qrAccessId);
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($isShepherd && $qr->cool && $qr->cool->shepherd_id !== $user->shepherd_id) {
+            abort(403, 'Anda hanya dapat mengelola akses kelompok COOL Anda sendiri.');
+        }
+
         $this->selectedQrAccessId = $qr->qr_access_id;
         $this->selectedCoolName = $qr->cool->name ?? 'COOL';
         $this->newPin = '';
@@ -41,7 +48,14 @@ class QrAccessManager extends Component
             'newPin.digits' => 'PIN harus terdiri dari 6 angka.',
         ]);
 
-        $qr = QrAccess::findOrFail($this->selectedQrAccessId);
+        $qr = QrAccess::with('cool')->findOrFail($this->selectedQrAccessId);
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($isShepherd && $qr->cool && $qr->cool->shepherd_id !== $user->shepherd_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $qr->update([
             'pin_hash' => Hash::make($this->newPin),
             'modified_by' => Auth::id() ?? 1,
@@ -56,6 +70,13 @@ class QrAccessManager extends Component
     public function regenerateToken(int $qrAccessId): void
     {
         $qr = QrAccess::with('cool')->findOrFail($qrAccessId);
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($isShepherd && $qr->cool && $qr->cool->shepherd_id !== $user->shepherd_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $newToken = 'qr-'.Str::slug($qr->cool->name ?? 'cool').'-'.Str::random(12);
 
         $qr->update([
@@ -70,6 +91,13 @@ class QrAccessManager extends Component
     public function generateMissingQr(int $coolId): void
     {
         $cool = Cool::findOrFail($coolId);
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($isShepherd && $cool->shepherd_id !== $user->shepherd_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $token = 'qr-'.Str::slug($cool->name).'-'.Str::random(12);
         $defaultPin = '123456';
 

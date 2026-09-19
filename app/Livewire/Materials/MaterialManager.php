@@ -101,6 +101,18 @@ class MaterialManager extends Component
             'file_upload.required' => 'File materi wajib diunggah.',
         ]);
 
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($isShepherd) {
+            $act = Activity::with('cool')->find($this->modal_activity_id);
+            if (! $act || ! $act->cool || $act->cool->shepherd_id !== $user->shepherd_id) {
+                $this->addError('modal_activity_id', 'Anda hanya dapat mengunggah materi untuk kegiatan kelompok COOL Anda sendiri.');
+
+                return;
+            }
+        }
+
         $filePath = null;
         $fileSize = null;
         $mimeType = null;
@@ -132,7 +144,14 @@ class MaterialManager extends Component
 
     public function deleteMaterial(int $materialId): void
     {
-        $material = ActivityMaterial::findOrFail($materialId);
+        $material = ActivityMaterial::with('activity.cool')->findOrFail($materialId);
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($isShepherd && $material->activity && $material->activity->cool && $material->activity->cool->shepherd_id !== $user->shepherd_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
         $material->update([
             'is_deleted' => true,
             'deleted_by' => Auth::id() ?? 1,

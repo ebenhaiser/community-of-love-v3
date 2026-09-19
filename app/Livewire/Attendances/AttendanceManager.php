@@ -6,6 +6,7 @@ use App\Models\Activity;
 use App\Models\Attendance;
 use App\Models\AttendanceStatus;
 use App\Models\Cool;
+use App\Models\CoolMember;
 use App\Models\Member;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -47,12 +48,27 @@ class AttendanceManager extends Component
             }
         }
 
+        $this->authorizeActivity();
         $this->loadNotes();
     }
 
     public function updatedActivityId(): void
     {
+        $this->authorizeActivity();
         $this->loadNotes();
+    }
+
+    protected function authorizeActivity(): void
+    {
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+
+        if ($this->activity_id && $isShepherd) {
+            $act = Activity::with('cool')->find($this->activity_id);
+            if ($act && $act->cool && $act->cool->shepherd_id !== $user->shepherd_id) {
+                abort(403, 'Anda hanya dapat mengakses presensi kegiatan kelompok COOL Anda sendiri.');
+            }
+        }
     }
 
     public function loadNotes(): void
@@ -71,8 +87,27 @@ class AttendanceManager extends Component
 
     public function setStatus(int $memberId, int $statusId): void
     {
+        $this->authorizeActivity();
+
         if (! $this->activity_id) {
             return;
+        }
+
+        $activity = Activity::with('cool')->find($this->activity_id);
+        if (! $activity || ! $activity->cool) {
+            return;
+        }
+
+        $user = Auth::user();
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        if ($isShepherd) {
+            $isCoolMember = CoolMember::where('cool_id', $activity->cool_id)
+                ->where('member_id', $memberId)
+                ->where('cool_members.is_deleted', false)
+                ->exists();
+            if (! $isCoolMember) {
+                abort(403, 'Anggota jemaat ini tidak terdaftar pada kelompok COOL Anda.');
+            }
         }
 
         $userId = Auth::id() ?? 1;
@@ -103,6 +138,8 @@ class AttendanceManager extends Component
 
     public function saveNote(int $memberId): void
     {
+        $this->authorizeActivity();
+
         if (! $this->activity_id) {
             return;
         }
@@ -125,6 +162,8 @@ class AttendanceManager extends Component
 
     public function markAllPresent(): void
     {
+        $this->authorizeActivity();
+
         if (! $this->activity_id) {
             return;
         }

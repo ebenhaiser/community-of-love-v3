@@ -11,7 +11,7 @@
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
       <div class="row g-3 align-items-end">
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
           <label class="form-label fw-semibold text-muted small">Kelompok COOL</label>
           <select class="form-select" wire:model.live="coolFilter">
             <option value="">Semua Kelompok COOL</option>
@@ -20,15 +20,15 @@
             @endforeach
           </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
           <label class="form-label fw-semibold text-muted small">Dari Tanggal</label>
           <input type="date" class="form-control" wire:model.live="startDate">
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
           <label class="form-label fw-semibold text-muted small">Sampai Tanggal</label>
           <input type="date" class="form-control" wire:model.live="endDate">
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
           <label class="form-label fw-semibold text-muted small">Ambang Absen Beruntun</label>
           <select class="form-select" wire:model.live="consecutiveThreshold">
             <option value="2">&ge; 2 Kali Berturut-turut</option>
@@ -42,7 +42,7 @@
 
   <!-- KPI Summary Cards -->
   <div class="row g-3 mb-4">
-    <div class="col-md-3">
+    <div class="col-12 col-sm-6 col-xl-3">
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body d-flex align-items-center">
           <div class="p-3 bg-primary-subtle text-primary rounded-circle me-3">
@@ -56,7 +56,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-12 col-sm-6 col-xl-3">
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body d-flex align-items-center">
           <div class="p-3 bg-success-subtle text-success rounded-circle me-3">
@@ -70,7 +70,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-12 col-sm-6 col-xl-3">
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body d-flex align-items-center">
           <div class="p-3 bg-danger-subtle text-danger rounded-circle me-3">
@@ -84,7 +84,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-12 col-sm-6 col-xl-3">
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body d-flex align-items-center">
           <div class="p-3 bg-info-subtle text-info rounded-circle me-3">

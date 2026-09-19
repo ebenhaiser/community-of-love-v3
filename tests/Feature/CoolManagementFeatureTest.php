@@ -5,15 +5,20 @@ namespace Tests\Feature;
 use App\Livewire\Activities\ActivityIndex;
 use App\Livewire\Attendances\AttendanceManager;
 use App\Livewire\Auth\Login;
+use App\Livewire\Cools\CoolDetail;
 use App\Livewire\Cools\CoolIndex;
+use App\Livewire\Events\EventIndex;
 use App\Livewire\Members\MemberIndex;
+use App\Livewire\Messages\MessageInbox;
 use App\Livewire\Public\CoolPortal;
 use App\Livewire\QrAccess\QrAccessManager;
+use App\Livewire\Shepherds\ShepherdIndex;
 use App\Livewire\Statistics\AttendanceStatistics;
 use App\Models\Activity;
 use App\Models\Attendance;
 use App\Models\Cool;
 use App\Models\Member;
+use App\Models\MemberMessage;
 use App\Models\QrAccess;
 use App\Models\Shepherd;
 use App\Models\User;
@@ -284,5 +289,149 @@ class CoolManagementFeatureTest extends TestCase
         Livewire::test(QrAccessManager::class)
             ->assertSee('Akses QR')
             ->assertSee('Tautan Portal Jemaat');
+    }
+
+    /**
+     * Test Cool Detail page renders properly with tabs and updates PIN.
+     */
+    public function test_cool_detail_page_renders_successfully(): void
+    {
+        $master = User::where('username', 'master')->first();
+        $this->actingAs($master);
+
+        $cool = Cool::first();
+
+        $response = $this->get('/cools/'.$cool->cool_id);
+        $response->assertStatus(200);
+        $response->assertSee($cool->name);
+
+        Livewire::test(CoolDetail::class, ['coolId' => $cool->cool_id])
+            ->assertSee($cool->name)
+            ->assertSee('Anggota Aktif')
+            ->set('activeTab', 'qr')
+            ->set('newPin', '654321')
+            ->call('updatePin')
+            ->assertHasNoErrors()
+            ->assertSee('PIN keamanan akses QR berhasil diperbarui');
+    }
+
+    /**
+     * Test strict data isolation and authorization for Gembala COOL (PRD Section 25).
+     */
+    public function test_shepherd_data_isolation_and_authorization(): void
+    {
+        $budiUser = User::where('username', 'gembala.budi')->first();
+        $this->assertNotNull($budiUser);
+        $this->assertEquals(1, $budiUser->shepherd_id);
+
+        $cool1 = Cool::where('cool_id', 1)->first(); // Shepherd ID 1 (Budi)
+        $cool2 = Cool::where('cool_id', 2)->first(); // Shepherd ID 2 (Sari)
+
+        $this->actingAs($budiUser);
+
+        // 1. Direct URL access to COOL Detail
+        $this->get('/cools/'.$cool1->cool_id)->assertStatus(200);
+        $this->get('/cools/'.$cool2->cool_id)->assertStatus(403);
+
+        // 2. CoolDetail Livewire authorization
+        Livewire::test(CoolDetail::class, ['coolId' => $cool1->cool_id])
+            ->assertStatus(200);
+
+        Livewire::test(CoolDetail::class, ['coolId' => $cool2->cool_id])
+            ->assertForbidden();
+
+        // 3. CoolIndex: only shows own COOL, forbidden to create or delete
+        Livewire::test(CoolIndex::class)
+            ->assertSee($cool1->name)
+            ->assertDontSee($cool2->name)
+            ->call('openCreateModal')
+            ->assertForbidden();
+
+        Livewire::test(CoolIndex::class)
+            ->call('deleteCool', $cool1->cool_id)
+            ->assertForbidden();
+
+        // 4. MemberIndex: only shows members of own COOL, forbidden to edit/delete other COOL's members
+        $memberOfCool1 = Member::whereHas('coolMembers', fn ($q) => $q->where('cool_id', 1)->where('cool_members.is_deleted', false))->first();
+        $memberOfCool2 = Member::whereHas('coolMembers', fn ($q) => $q->where('cool_id', 2)->where('cool_members.is_deleted', false))->first();
+
+        Livewire::test(MemberIndex::class)
+            ->assertSee($memberOfCool1->name)
+            ->assertDontSee($memberOfCool2->name)
+            ->call('openEditModal', $memberOfCool2->member_id)
+            ->assertForbidden();
+
+        Livewire::test(MemberIndex::class)
+            ->call('deleteMember', $memberOfCool2->member_id)
+            ->assertForbidden();
+
+        // 5. ActivityIndex: only shows activities of own COOL, forbidden to edit/delete other COOL's activities
+        $actCool1 = Activity::where('cool_id', 1)->where('is_deleted', false)->first();
+        $actCool2 = Activity::where('cool_id', 2)->where('is_deleted', false)->first();
+
+        Livewire::test(ActivityIndex::class)
+            ->assertSee($actCool1->name)
+            ->assertDontSee($actCool2->name)
+            ->call('openEditModal', $actCool2->activity_id)
+            ->assertForbidden();
+
+        Livewire::test(ActivityIndex::class)
+            ->call('deleteActivity', $actCool2->activity_id)
+            ->assertForbidden();
+
+        // 6. AttendanceManager: forbidden to access other COOL's activity
+        Livewire::test(AttendanceManager::class, ['activityId' => $actCool2->activity_id])
+            ->assertForbidden();
+
+        // 7. QrAccessManager: only shows own COOL, forbidden to manage other COOL's QR/PIN
+        $qrCool2 = QrAccess::where('cool_id', 2)->where('is_deleted', false)->first();
+        if ($qrCool2) {
+            Livewire::test(QrAccessManager::class)
+                ->assertSee($cool1->name)
+                ->assertDontSee($cool2->name)
+                ->call('openPinModal', $qrCool2->qr_access_id)
+                ->assertForbidden();
+        }
+
+        // 8. ShepherdIndex: only shows own shepherd profile, forbidden to edit other shepherd
+        Livewire::test(ShepherdIndex::class)
+            ->assertSee('Budi')
+            ->assertDontSee('Hendra')
+            ->call('openCreateModal')
+            ->assertForbidden();
+
+        Livewire::test(ShepherdIndex::class)
+            ->call('openEditModal', 2)
+            ->assertForbidden();
+
+        Livewire::test(ShepherdIndex::class)
+            ->call('deleteShepherd', 2)
+            ->assertForbidden();
+
+        // 9. MessageInbox: cannot read or delete messages from other COOL
+        $msgCool2 = MemberMessage::create([
+            'cool_id' => 2,
+            'shepherd_id' => 2,
+            'message' => 'Pesan rahasia untuk Gembala Hendra',
+            'status' => 'SENT',
+            'is_deleted' => false,
+            'date_created' => now(),
+        ]);
+
+        Livewire::test(MessageInbox::class)
+            ->assertDontSee('Pesan rahasia untuk Gembala Hendra')
+            ->call('markAsRead', $msgCool2->message_id)
+            ->assertForbidden();
+
+        Livewire::test(MessageInbox::class)
+            ->call('deleteMessage', $msgCool2->message_id)
+            ->assertForbidden();
+
+        // 10. EventIndex: Shepherd can view permitted events without SQL error, forbidden to create/edit/delete
+        Livewire::test(EventIndex::class)
+            ->assertOk()
+            ->assertSee('Event Gereja Lintas COOL')
+            ->call('openCreateModal')
+            ->assertForbidden();
     }
 }
