@@ -181,6 +181,8 @@ class CoolPortal extends Component
             ->take(8)
             ->get();
 
-        return view('livewire.public.cool-portal', compact('cool', 'upcomingActivities', 'materials'));
+        $isVerified = $this->isVerified;
+
+        return view('livewire.public.cool-portal', compact('cool', 'upcomingActivities', 'materials', 'isVerified'));
     }
 }

@@ -81,4 +81,14 @@ class Member extends Model
     {
         return $this->hasMany(EventAttendance::class, 'member_id', 'member_id');
     }
+
+    public function followUps(): HasMany
+    {
+        return $this->hasMany(MemberFollowUp::class, 'member_id', 'member_id');
+    }
+
+    public function latestFollowUp()
+    {
+        return $this->hasOne(MemberFollowUp::class, 'member_id', 'member_id')->latestOfMany('follow_up_id');
+    }
 }

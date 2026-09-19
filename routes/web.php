@@ -7,9 +7,12 @@ use App\Livewire\Cools\CoolDetail;
 use App\Livewire\Cools\CoolIndex;
 use App\Livewire\Dashboard;
 use App\Livewire\Events\EventIndex;
+use App\Livewire\FollowUps\FollowUpIndex;
+use App\Livewire\Master\AppUserManager;
 use App\Livewire\Materials\MaterialManager;
 use App\Livewire\Members\MemberIndex;
 use App\Livewire\Messages\MessageInbox;
+use App\Livewire\Profile\UserProfile;
 use App\Livewire\Public\CoolPortal;
 use App\Livewire\QrAccess\QrAccessManager;
 use App\Livewire\Shepherds\ShepherdIndex;
@@ -59,6 +62,7 @@ Route::middleware('auth')->group(function () {
 
     // Monitoring & Statistik
     Route::get('/statistics', AttendanceStatistics::class)->name('statistics.index');
+    Route::get('/follow-ups', FollowUpIndex::class)->name('follow-ups.index');
 
     // Komunikasi & Akses
     Route::get('/messages', MessageInbox::class)->name('messages.index');
@@ -66,4 +70,9 @@ Route::middleware('auth')->group(function () {
 
     // Event Gereja (Phase 2)
     Route::get('/church-events', EventIndex::class)->name('church-events.index');
+
+    // Profil & Pengaturan Akun
+    Route::get('/profile', UserProfile::class)->name('profile.show');
+    Route::get('/settings', UserProfile::class)->name('settings.show');
+    Route::get('/master/users', AppUserManager::class)->name('master.users.index');
 });

@@ -98,8 +98,15 @@ class CoolDetail extends Component
     {
         $cool = Cool::with([
             'shepherd',
-            'coolMembers' => fn ($q) => $q->where('cool_members.is_deleted', false)->where('status', 'ACTIVE')->with('member'),
-            'activities' => fn ($q) => $q->where('activities.is_deleted', false)->with(['activityType', 'attendances'])->orderByDesc('activity_date'),
+            'coolMembers' => fn ($q) => $q->where('cool_members.is_deleted', false)->with('member'),
+            'activities' => fn ($q) => $q->where('activities.is_deleted', false)
+                ->with(['activityType'])
+                ->withCount([
+                    'attendances as total_attendances' => fn ($sub) => $sub->where('is_deleted', false),
+                    'attendances as present_count' => fn ($sub) => $sub->where('is_deleted', false)
+                        ->whereHas('status', fn ($s) => $s->where('code', 'PRESENT')),
+                ])
+                ->orderByDesc('activity_date'),
             'qrAccesses' => fn ($q) => $q->where('qr_accesses.is_deleted', false)->latest('qr_access_id'),
         ])->findOrFail($this->coolId);
 

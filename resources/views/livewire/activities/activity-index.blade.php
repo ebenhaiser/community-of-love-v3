@@ -98,11 +98,13 @@
                 </td>
                 <td class="text-center">
                   @if ($act->total_attendances > 0)
-                    <span class="badge bg-success-subtle text-success px-2 py-1">
-                      <i class="bi bi-check-circle-fill me-1"></i>{{ $act->present_count }} / {{ $act->total_attendances }}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" title="{{ $act->present_count }} hadir dari {{ $act->total_attendances }} tercatat">
+                      <i class="bi bi-person-check-fill me-1"></i>{{ $act->present_count }} / {{ $act->total_attendances }} Hadir
                     </span>
                   @else
-                    <span class="badge bg-secondary-subtle text-muted">Belum ada data</span>
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
+                      <i class="bi bi-dash-circle me-1"></i>Belum diisi
+                    </span>
                   @endif
                 </td>
                 <td>

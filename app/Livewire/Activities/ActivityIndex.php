@@ -249,10 +249,11 @@ class ActivityIndex extends Component
                         ->orWhere('description', 'like', "%{$this->search}%");
                 });
             })
-            ->with(['cool', 'activityType', 'attendances'])
+            ->with(['cool', 'activityType'])
             ->withCount([
-                'attendances as total_attendances',
-                'attendances as present_count' => fn ($q) => $q->where('status', 'PRESENT')->where('is_deleted', false),
+                'attendances as total_attendances' => fn ($q) => $q->where('is_deleted', false),
+                'attendances as present_count' => fn ($q) => $q->where('is_deleted', false)
+                    ->whereHas('status', fn ($s) => $s->where('code', 'PRESENT')),
             ])
             ->orderByDesc('activity_date')
             ->orderByDesc('start_time')

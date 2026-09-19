@@ -112,9 +112,14 @@
           </h5>
           <p class="text-muted small mb-0 mt-1">Anggota yang tidak hadir &ge; {{ $consecutiveThreshold }} kali berturut-turut pada pertemuan COOL dan membutuhkan kunjungan / sapaan gembala.</p>
         </div>
-        <span class="badge bg-danger rounded-pill px-3 py-2 fs-6">
-          {{ count($absentAlerts) }} Perlu Perhatian
-        </span>
+        <div class="d-flex align-items-center gap-2">
+          <a href="{{ url('/follow-ups') }}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-box-arrow-up-right me-1"></i>Kelola di Master Follow-up
+          </a>
+          <span class="badge bg-danger rounded-pill px-3 py-2 fs-6">
+            {{ count($absentAlerts) }} Perlu Perhatian
+          </span>
+        </div>
       </div>
     </div>
     <div class="card-body p-0">

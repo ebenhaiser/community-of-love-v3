@@ -165,7 +165,7 @@
                       @endif
                     </td>
                     <td class="text-end">
-                      <a href="{{ url('/activities/' . $act->activity_id . '/attendance') }}" class="btn btn-sm btn-outline-success">
+                      <a href="{{ url('/attendances?activity_id=' . $act->activity_id) }}" class="btn btn-sm btn-outline-success">
                         <i class="bi bi-check2-square me-1"></i> Buka
                       </a>
                     </td>
@@ -188,7 +188,12 @@
       <div class="card border-warning shadow-sm mb-4">
         <div class="card-header bg-warning-subtle text-warning-emphasis fw-bold py-3 d-flex justify-content-between align-items-center">
           <span><i class="bi bi-exclamation-triangle-fill me-2"></i>Perlu Perhatian & Follow-up</span>
-          <span class="badge bg-warning text-dark rounded-pill">Sistem Alert</span>
+          <div class="d-flex align-items-center gap-1">
+            <a href="{{ url('/follow-ups') }}" class="btn btn-xs btn-outline-warning text-dark py-0 px-2 fw-semibold" style="font-size: 11px;" title="Kelola Master Pastoral Follow-up">
+              Kelola Master <i class="bi bi-arrow-right"></i>
+            </a>
+            <span class="badge bg-warning text-dark rounded-pill">Sistem Alert</span>
+          </div>
         </div>
         <div class="card-body">
           <p class="small text-muted mb-3">
@@ -201,9 +206,25 @@
                   <div class="fw-semibold text-dark">{{ $flagged->name }}</div>
                   <small class="text-danger"><i class="bi bi-x-circle me-1"></i>Tidak hadir berturut-turut ({{ $flagged->phone ?? 'Tanpa kontak' }})</small>
                 </div>
-                <a href="{{ url('/members?search=' . urlencode($flagged->name)) }}" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1">
-                  Follow-up
-                </a>
+                <div class="d-flex gap-1">
+                  @if (!empty($flagged->phone))
+                    @php
+                      $cleanPhone = preg_replace('/[^0-9]/', '', $flagged->phone);
+                      if (str_starts_with($cleanPhone, '0')) {
+                          $cleanPhone = '62' . substr($cleanPhone, 1);
+                      }
+                      $msg = "Shalom Sdr/i {$flagged->name}, kami dari COOL " . ($flagged->cool_name ?? 'COOL') . " GBI Salemba merindukan kehadiran Anda. Semoga Sdr/i dalam keadaan sehat & diberkati. Apakah ada pokok doa yang bisa kami doakan bersama?";
+                    @endphp
+                    <a href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode($msg) }}" target="_blank" class="btn btn-sm btn-success" title="Sapa via WhatsApp">
+                      <i class="bi bi-whatsapp"></i>
+                    </a>
+                  @else
+                    <span class="badge bg-secondary-subtle text-muted align-self-center">No HP Kosong</span>
+                  @endif
+                  <a href="{{ url('/follow-ups') }}" class="btn btn-sm btn-outline-danger" title="Buka di Master Follow-up">
+                    <i class="bi bi-clipboard2-check"></i>
+                  </a>
+                </div>
               </div>
             @empty
               <div class="text-muted small py-2">

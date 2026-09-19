@@ -85,6 +85,12 @@
             <span>Statistik Kehadiran</span>
           </a>
         </li>
+        <li class="sidebar-menu-item">
+          <a href="{{ url('/follow-ups') }}" class="sidebar-menu-link {{ request()->is('follow-ups*') ? 'active' : '' }}" id="menu-follow-ups" title="Perhatian & Follow-up">
+            <i class="bi bi-heart-pulse-fill"></i>
+            <span>Pastoral & Follow-up</span>
+          </a>
+        </li>
       </ul>
     </div>
 
@@ -119,15 +125,30 @@
         </li>
       </ul>
     </div>
+
+    @if(Auth::check() && Auth::user()->role->name === 'MASTER')
+    <!-- Group: Admin -->
+    <div class="sidebar-menu-section">  
+      <div class="sidebar-menu-title">Admin</div>
+      <ul class="sidebar-menu-list">
+        <li class="sidebar-menu-item">
+          <a href="{{ url('/master/users') }}" class="sidebar-menu-link {{ request()->is('master/users*') ? 'active' : '' }}" id="menu-master-users" title="Manajemen Pengguna">
+            <i class="bi bi-people-fill"></i>
+            <span>Manajemen Pengguna</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    @endif
   </div>
 
   <!-- Sidebar Profile Card (Dynamic Footer) -->
-  <div class="sidebar-profile">
+  <!-- <div class="sidebar-profile">
     <img src="{{ asset('spark-admin-1.0.0/assets/images/avatar.png') }}" alt="Profile" class="sidebar-profile-img"
       onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'">
     <div class="sidebar-profile-info">
       <div class="sidebar-profile-name">{{ auth()->user()->full_name ?? auth()->user()->username ?? 'Pengguna' }}</div>
       <div class="sidebar-profile-email">{{ (auth()->user()->role && auth()->user()->role->name === 'SHEPHERD') ? 'Gembala COOL' : 'Master Administrator' }}</div>
     </div>
-  </div>
+  </div> -->
 </div>

@@ -6,6 +6,7 @@ use App\Models\Activity;
 use App\Models\Attendance;
 use App\Models\Cool;
 use App\Models\Member;
+use App\Models\MemberFollowUp;
 use App\Models\Shepherd;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -69,8 +70,15 @@ class Dashboard extends Component
             ? round(($presentCount / $totalAttendanceRecords) * 100, 1)
             : 0;
 
+        // Exclude members who have already been handled/resolved in pastoral follow-up
+        $resolvedMemberIds = MemberFollowUp::where('status', 'RESOLVED')
+            ->where('is_deleted', false)
+            ->pluck('member_id')
+            ->toArray();
+
         // Members with consecutive absences (FR-11 & FR-12 alert)
         $flaggedMembers = Member::where('is_deleted', false)
+            ->whereNotIn('member_id', $resolvedMemberIds)
             ->when($isShepherd, function ($q) use ($coolIds) {
                 $q->whereHas('coolMembers', fn ($cm) => $cm->whereIn('cool_id', $coolIds));
             })
@@ -87,6 +95,11 @@ class Dashboard extends Component
                 }
 
                 return false;
+            })
+            ->map(function ($member) {
+                $member->cool_name = $member->coolMembers->first()?->cool?->name ?? 'COOL';
+
+                return $member;
             })
             ->take(5);
 

@@ -5,6 +5,7 @@ namespace App\Livewire\Statistics;
 use App\Models\Activity;
 use App\Models\Cool;
 use App\Models\Member;
+use App\Models\MemberFollowUp;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -89,16 +90,22 @@ class AttendanceStatistics extends Component
         $overallRate = $grandTotal > 0 ? round(($totalPresent / $grandTotal) * 100) : 0;
 
         // Consecutive Absence Detection
-        // Find members of selected COOL(s)
+        // Exclude members who have already been handled/resolved in pastoral follow-up
+        $resolvedMemberIds = MemberFollowUp::where('status', 'RESOLVED')
+            ->where('is_deleted', false)
+            ->pluck('member_id')
+            ->toArray();
+
+        // Find members of selected COOL(s) (do not exclude inactive members, as consecutive absentees often become inactive and need pastoral follow-up)
         $membersQuery = Member::where('is_deleted', false)
-            ->where('is_active', true)
+            ->whereNotIn('member_id', $resolvedMemberIds)
             ->with([
                 'cools' => fn ($q) => $q->wherePivot('is_deleted', false)->where('cools.is_deleted', false)->with('shepherd'),
+                'coolMembers.cool.shepherd',
                 'attendances' => function ($q) {
                     $q->where('attendances.is_deleted', false)
                         ->whereHas('activity', fn ($a) => $a->where('activities.is_deleted', false))
-                        ->with(['activity', 'status'])
-                        ->orderByDesc('attendance_time');
+                        ->with(['activity', 'status']);
                 },
             ]);
 
@@ -119,7 +126,9 @@ class AttendanceStatistics extends Component
 
         foreach ($allMembers as $member) {
             // Check past attendances ordered by activity date desc
-            $sortedAttendances = $member->attendances->sortByDesc(fn ($att) => $att->activity->activity_date ?? $att->attendance_time);
+            $sortedAttendances = $member->attendances->sortByDesc(
+                fn ($att) => $att->activity?->activity_date?->timestamp ?? ($att->attendance_time ? $att->attendance_time->timestamp : $att->attendance_id)
+            );
 
             $consecutiveCount = 0;
             $lastAttendedDate = null;
@@ -135,13 +144,13 @@ class AttendanceStatistics extends Component
             }
 
             if ($consecutiveCount >= $this->consecutiveThreshold) {
-                $cool = $member->cools->first();
+                $cool = $member->cools->first() ?? $member->coolMembers->first()?->cool;
                 $absentAlerts[] = [
                     'member_id' => $member->member_id,
                     'name' => $member->name,
                     'phone' => $member->phone,
                     'cool_name' => $cool->name ?? '-',
-                    'shepherd_name' => $cool->shepherd->name ?? '-',
+                    'shepherd_name' => $cool?->shepherd?->name ?? '-',
                     'consecutive_absent' => $consecutiveCount,
                     'last_attended' => $lastAttendedDate ? $lastAttendedDate->format('d M Y') : 'Belum pernah',
                 ];

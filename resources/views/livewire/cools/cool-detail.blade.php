@@ -95,24 +95,47 @@
   <!-- Tab 1: Anggota Aktif -->
   @if ($activeTab === 'members')
     <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <h6 class="card-title mb-0 fw-bold text-dark">
+            <i class="bi bi-people-fill text-success me-2"></i>Daftar Anggota Aktif Kelompok COOL
+          </h6>
+          <small class="text-muted">Total {{ $cool->coolMembers->count() }} anggota terdaftar dalam kelompok ini</small>
+        </div>
+        <a href="{{ url('/members') }}" class="btn btn-sm btn-success">
+          <i class="bi bi-person-plus-fill me-1"></i> Kelola / Tambah Anggota
+        </a>
+      </div>
       <div class="card-body p-0">
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
-                <th>Kode</th>
-                <th>Nama Anggota</th>
-                <th>No. Telepon / WhatsApp</th>
-                <th>Email</th>
-                <th>Tgl Bergabung COOL</th>
-                <th>Status</th>
+                <th style="min-width: 120px;">No. ID</th>
+                <th style="min-width: 200px;">Nama Anggota</th>
+                <th style="min-width: 180px;">No. Telepon / WhatsApp</th>
+                <th style="min-width: 180px;">Email</th>
+                <th style="min-width: 160px;">Tgl Bergabung COOL</th>
+                <th style="min-width: 130px;">Status</th>
+                <th class="text-end" style="min-width: 100px;">Aksi</th>
               </tr>
             </thead>
             <tbody>
               @forelse ($cool->coolMembers as $cm)
                 <tr wire:key="cm-{{ $cm->cool_member_id }}">
-                  <td><span class="badge bg-light text-dark border font-monospace">{{ $cm->member->member_code ?? '-' }}</span></td>
-                  <td class="fw-semibold text-dark">{{ $cm->member->name ?? '-' }}</td>
+                  <td>
+                    <span class="badge bg-light text-secondary border font-monospace">
+                      {{ $cm->member->member_code ?? '-' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar avatar-sm bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-weight: 600;">
+                        {{ strtoupper(substr($cm->member->name ?? 'A', 0, 2)) }}
+                      </div>
+                      <span class="fw-semibold text-dark">{{ $cm->member->name ?? '-' }}</span>
+                    </div>
+                  </td>
                   <td>
                     @if ($cm->member && $cm->member->phone)
                       @php
@@ -121,30 +144,62 @@
                             $cleanMbrPhone = '62' . substr($cleanMbrPhone, 1);
                         }
                       @endphp
-                      <a href="https://wa.me/{{ $cleanMbrPhone }}" target="_blank" class="text-decoration-none text-success">
+                      <a href="https://wa.me/{{ $cleanMbrPhone }}" target="_blank" class="text-decoration-none text-success fw-medium" title="Kirim Pesan WhatsApp">
                         <i class="bi bi-whatsapp me-1"></i>{{ $cm->member->phone }}
                       </a>
                     @else
                       <span class="text-muted small">-</span>
                     @endif
                   </td>
-                  <td>{{ $cm->member->email ?? '-' }}</td>
                   <td>
-                    @php $mbrStatus = $cm->member->status ?? $cm->status; @endphp
-                    @if ($mbrStatus === 'ACTIVE' || ($cm->member->is_active && !in_array($mbrStatus, ['INACTIVE', 'MOVED'])))
-                      <span class="badge bg-success-subtle text-success border border-success-subtle">Aktif</span>
-                    @elseif ($mbrStatus === 'NEW')
-                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Baru</span>
-                    @elseif ($mbrStatus === 'MOVED')
-                      <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Pindah</span>
+                    @if ($cm->member && $cm->member->email)
+                      <span class="text-muted small"><i class="bi bi-envelope me-1"></i>{{ $cm->member->email }}</span>
                     @else
-                      <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Non-Aktif</span>
+                      <span class="text-muted small">-</span>
                     @endif
                   </td>
+                  <td>
+                    <span class="text-muted small">
+                      <i class="bi bi-calendar3 me-1"></i>
+                      {{ $cm->start_date ? \Carbon\Carbon::parse($cm->start_date)->format('d M Y') : '-' }}
+                    </span>
+                  </td>
+                  <td>
+                    @php $mbrStatus = $cm->member->status ?? $cm->status; @endphp
+                    @if ($mbrStatus === 'ACTIVE')
+                      <span class="badge bg-success-subtle text-success border border-success-subtle">
+                        <i class="bi bi-check-circle-fill me-1"></i>Aktif
+                      </span>
+                    @elseif ($mbrStatus === 'NEW')
+                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                        <i class="bi bi-person-plus-fill me-1"></i>Baru
+                      </span>
+                    @elseif ($mbrStatus === 'MOVED')
+                      <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                        <i class="bi bi-arrow-left-right me-1"></i>Pindah
+                      </span>
+                    @elseif ($mbrStatus === 'INACTIVE' || (isset($cm->member) && ! $cm->member->is_active))
+                      <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                        <i class="bi bi-dash-circle me-1"></i>Non-Aktif
+                      </span>
+                    @else
+                      <span class="badge bg-light text-dark border">
+                        {{ $mbrStatus }}
+                      </span>
+                    @endif
+                  </td>
+                  <td class="text-end text-nowrap">
+                    @if ($cm->member)
+                      <a href="{{ url('/members?search=' . urlencode($cm->member->member_code ?: $cm->member->name)) }}" class="btn btn-sm btn-outline-secondary" title="Kelola Anggota di Master Data">
+                        <i class="bi bi-pencil me-1"></i> Ubah
+                      </a>
+                    @endif
+                  </td>
+                </tr>
               @empty
                 <tr>
-                  <td colspan="6" class="text-center text-muted py-4">
-                    <i class="bi bi-people fs-2 d-block mb-2 text-secondary"></i>
+                  <td colspan="7" class="text-center text-muted py-5">
+                    <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
                     Belum ada anggota terdaftar pada kelompok COOL ini.
                   </td>
                 </tr>
@@ -159,18 +214,29 @@
   <!-- Tab 2: Jadwal & Riwayat Kegiatan -->
   @if ($activeTab === 'activities')
     <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <h6 class="card-title mb-0 fw-bold text-dark">
+            <i class="bi bi-calendar-event-fill text-success me-2"></i>Jadwal & Riwayat Kegiatan COOL
+          </h6>
+          <small class="text-muted">Total {{ $cool->activities->count() }} kegiatan tercatat</small>
+        </div>
+        <a href="{{ url('/activities?coolFilter=' . $cool->cool_id) }}" class="btn btn-sm btn-success">
+          <i class="bi bi-calendar-plus me-1"></i> Buat Kegiatan Baru
+        </a>
+      </div>
       <div class="card-body p-0">
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
-                <th>Nama Kegiatan</th>
-                <th>Jenis Pertemuan</th>
-                <th>Tanggal & Waktu</th>
-                <th>Lokasi</th>
-                <th>Kehadiran</th>
-                <th>Status</th>
-                <th class="text-end">Aksi</th>
+                <th style="min-width: 180px;">Nama Kegiatan</th>
+                <th style="min-width: 140px;">Jenis Pertemuan</th>
+                <th style="min-width: 150px;">Tanggal & Waktu</th>
+                <th style="min-width: 130px;">Lokasi</th>
+                <th style="min-width: 120px;">Kehadiran</th>
+                <th style="min-width: 110px;">Status</th>
+                <th class="text-end" style="min-width: 110px;">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -179,25 +245,31 @@
                   <td class="fw-semibold text-dark">{{ $act->name }}</td>
                   <td><span class="badge bg-light text-dark border">{{ $act->activityType->name ?? 'Kegiatan' }}</span></td>
                   <td>
-                    <div class="fw-medium text-dark">{{ $act->activity_date ? $act->activity_date->format('d M Y') : '-' }}</div>
-                    <small class="text-muted">{{ $act->start_time ? substr((string) $act->start_time, 0, 5) : '19:00' }} WIB</small>
+                    <div class="fw-medium text-dark"><i class="bi bi-calendar-event me-1 text-muted"></i>{{ $act->activity_date ? $act->activity_date->format('d M Y') : '-' }}</div>
+                    <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ $act->start_time ? substr((string) $act->start_time, 0, 5) : '19:00' }} WIB</small>
                   </td>
-                  <td><span class="text-muted small">{{ $act->location ?: 'Online' }}</span></td>
+                  <td><span class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ $act->location ?: 'Online' }}</span></td>
                   <td>
-                    <span class="badge bg-success-subtle text-success">
-                      {{ $act->attendances->where('status.code', 'PRESENT')->count() }} Hadir
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                      <i class="bi bi-person-check-fill me-1"></i>{{ $act->attendances->where('status.code', 'PRESENT')->count() }} Hadir
                     </span>
                   </td>
                   <td>
                     @if ($act->status === 'COMPLETED')
-                      <span class="badge bg-success">Selesai</span>
+                      <span class="badge bg-success-subtle text-success border border-success-subtle">
+                        <i class="bi bi-check-circle-fill me-1"></i>Selesai
+                      </span>
                     @elseif ($act->status === 'CANCELLED')
-                      <span class="badge bg-danger">Dibatalkan</span>
+                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                        <i class="bi bi-x-circle-fill me-1"></i>Dibatalkan
+                      </span>
                     @else
-                      <span class="badge bg-info text-dark">Terjadwal</span>
+                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                        <i class="bi bi-clock-history me-1"></i>Terjadwal
+                      </span>
                     @endif
                   </td>
-                  <td class="text-end">
+                  <td class="text-end text-nowrap">
                     <a href="{{ url('/attendances?activity_id=' . $act->activity_id) }}" class="btn btn-sm btn-outline-success">
                       <i class="bi bi-check2-square me-1"></i> Presensi
                     </a>
@@ -205,8 +277,8 @@
                 </tr>
               @empty
                 <tr>
-                  <td colspan="7" class="text-center text-muted py-4">
-                    <i class="bi bi-calendar-x fs-2 d-block mb-2 text-secondary"></i>
+                  <td colspan="7" class="text-center text-muted py-5">
+                    <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary"></i>
                     Belum ada kegiatan yang dijadwalkan untuk kelompok ini.
                   </td>
                 </tr>
