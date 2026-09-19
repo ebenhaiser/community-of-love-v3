@@ -140,6 +140,19 @@
       </ul>
     </div>
     @endif
+
+    <!-- Group: Tentang Kami -->
+    <div class="sidebar-menu-section">
+      <div class="sidebar-menu-title">Tentang Kami</div>
+      <ul class="sidebar-menu-list">
+        <li class="sidebar-menu-item">
+          <a href="{{ url('/about-us') }}" class="sidebar-menu-link {{ request()->is('about-us*') ? 'active' : '' }}" id="menu-about-us" title="Tentang Kami">
+            <i class="bi bi-info-circle-fill"></i>
+            <span>Tentang Kami</span>
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <!-- Sidebar Profile Card (Dynamic Footer) -->
