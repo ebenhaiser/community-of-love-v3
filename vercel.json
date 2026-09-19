@@ -37,6 +37,7 @@
         "DB_HOST": "sql.freedb.tech",
         "DB_PORT": "3306",
         "DB_DATABASE": "freedb_MOvNZOa8",
-        "DB_USERNAME": "freedb_u_2JP4gL"
+        "DB_USERNAME": "freedb_u_2JP4gL",
+        "DB_PASSWORD": "XruyFzcxbGT6"
     }
 }
