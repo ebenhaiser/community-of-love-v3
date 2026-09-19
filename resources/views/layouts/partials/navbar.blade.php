@@ -32,10 +32,10 @@
 
   <!-- Mid navbar: search pill -->
   <div class="navbar-search-wrapper">
-    <input type="text" class="navbar-search-input" placeholder="Cari data anggota, COOL, kegiatan..." id="main-search">
+    <!-- <input type="text" class="navbar-search-input" placeholder="Cari data anggota, COOL, kegiatan..." id="main-search">
     <button class="navbar-search-btn" aria-label="Search">
       <i class="bi bi-search"></i>
-    </button>
+    </button> -->
   </div>
 
   <!-- Right actions -->
@@ -95,7 +95,7 @@
       <ul class="dropdown-menu dropdown-menu-end dropdown-menu-profile" aria-labelledby="profile-dropdown">
         <li class="dropdown-header">Selamat Datang!</li>
         <li><a class="dropdown-item" href="{{ url('/profile') }}"><i class="bi bi-person"></i> Profil Saya</a></li>
-        <li><a class="dropdown-item" href="{{ url('/settings') }}"><i class="bi bi-gear"></i> Pengaturan</a></li>
+        <!-- <li><a class="dropdown-item" href="{{ url('/settings') }}"><i class="bi bi-gear"></i> Pengaturan</a></li> -->
         <li>
           <hr class="dropdown-divider">
         </li>
