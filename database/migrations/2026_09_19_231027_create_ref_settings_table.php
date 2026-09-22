@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('ref_settings', function (Blueprint $table) {
             $table->id('ref_setting_id')->primary();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->string('type');
             $table->string('value');
         });
