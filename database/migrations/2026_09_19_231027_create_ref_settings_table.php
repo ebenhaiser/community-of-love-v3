@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ref_settings', function (Blueprint $table) {
+            $table->id();
             $table->string('name')->primary();
             $table->string('type');
             $table->string('value');
