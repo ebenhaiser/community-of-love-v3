@@ -19,10 +19,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const sidebar = document.querySelector('.sidebar-wrapper');
     const toggleBtn = document.querySelector('.sidebar-toggle-btn');
     
-    // Create and append backdrop overlay for mobile sidebar
-    let overlay = document.createElement('div');
-    overlay.className = 'sidebar-overlay';
-    document.body.appendChild(overlay);
+    // Reuse existing overlay (may be created by app.blade.php script) or create one
+    let overlay = document.querySelector('.sidebar-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        document.body.appendChild(overlay);
+    }
 
     if (toggleBtn && sidebar) {
         toggleBtn.addEventListener('click', function (e) {

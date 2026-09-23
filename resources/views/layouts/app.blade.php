@@ -82,12 +82,18 @@
   <!-- Mobile Sidebar Interaction Script -->
   <script>
     (function () {
+      /**
+       * Mobile sidebar helper.
+       * dashboard.js already handles: open/close toggle, overlay click-to-close.
+       * We only add: close-on-nav-link-click (mobile) + re-bind after Livewire navigation.
+       */
       function initMobileNav() {
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('sidebar-toggle');
         const closeBtn = document.getElementById('sidebar-close-btn');
-        let overlay = document.querySelector('.sidebar-overlay');
 
+        // Reuse the overlay dashboard.js created, or create one if missing
+        let overlay = document.querySelector('.sidebar-overlay');
         if (!overlay) {
           overlay = document.createElement('div');
           overlay.className = 'sidebar-overlay';
@@ -104,8 +110,12 @@
           if (overlay) overlay.classList.remove('show');
         }
 
+        // Attach toggle (use addEventListener to avoid overwriting dashboard.js handler)
         if (toggleBtn) {
-          toggleBtn.onclick = function (e) {
+          // Remove previous listener by cloning the node, then re-attach
+          const newToggle = toggleBtn.cloneNode(true);
+          toggleBtn.parentNode.replaceChild(newToggle, toggleBtn);
+          newToggle.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             if (sidebar && sidebar.classList.contains('show')) {
@@ -113,45 +123,47 @@
             } else {
               openNav();
             }
-          };
+          });
         }
 
+        // Sidebar close button (X)
         if (closeBtn) {
-          closeBtn.onclick = function (e) {
+          const newClose = closeBtn.cloneNode(true);
+          closeBtn.parentNode.replaceChild(newClose, closeBtn);
+          newClose.addEventListener('click', function (e) {
             e.preventDefault();
             closeNav();
-          };
+          });
         }
 
-        if (overlay) {
-          overlay.onclick = function () {
-            closeNav();
-          };
-        }
+        // Overlay click closes sidebar
+        overlay.onclick = function () {
+          closeNav();
+        };
 
-        // Close when clicking nav links on mobile
+        // Close sidebar when a nav link is clicked on mobile
         if (sidebar) {
-          const links = sidebar.querySelectorAll('.sidebar-menu-link');
-          links.forEach(function (link) {
-            link.addEventListener('click', function () {
-              if (window.innerWidth < 1200) {
-                closeNav();
-              }
-            });
+          sidebar.addEventListener('click', function (e) {
+            const link = e.target.closest('.sidebar-menu-link');
+            if (link && window.innerWidth < 1200) {
+              closeNav();
+            }
           });
         }
       }
 
+      // Run after DOM is ready
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initMobileNav);
       } else {
         initMobileNav();
       }
+
+      // Re-run after every Livewire navigation (SPA-style page change)
       document.addEventListener('livewire:navigated', initMobileNav);
     })();
   </script>
 
-  @livewireStyles
   @livewireScripts
   @stack('scripts')
 </body>

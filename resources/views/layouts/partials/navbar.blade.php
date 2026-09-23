@@ -40,8 +40,8 @@
 
   <!-- Right actions -->
   <div class="navbar-actions">
-    <!-- Fullscreen Toggle -->
-    <button class="navbar-action-btn me-1" aria-label="Toggle Fullscreen" id="btn-fullscreen">
+    <!-- Fullscreen Toggle (desktop only — fullscreen API is irrelevant on mobile) -->
+    <button class="navbar-action-btn me-1 d-none d-xl-flex" aria-label="Toggle Fullscreen" id="btn-fullscreen">
       <i class="bi bi-arrows-fullscreen"></i>
     </button>
 

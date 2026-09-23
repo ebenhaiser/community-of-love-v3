@@ -810,21 +810,25 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   .sidebar-wrapper {
     position: fixed;
     top: 0;
-    left: -300px;
+    left: 0;
     width: 280px;
     height: 100vh;
     z-index: 1040;
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Use transform (same approach as main.css) so both agree on show/hide */
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: none;
   }
 
   .sidebar-wrapper.show {
-    left: 0;
+    transform: translateX(0);
     box-shadow: 10px 0 40px rgba(0, 0, 0, 0.3);
   }
 
   .main-wrapper {
     margin-left: 0 !important;
+    /* Reset the desktop padding from main.css so mobile content isn't squished */
+    padding: 0 !important;
   }
 
   /* Backdrop Overlay */
@@ -855,11 +859,29 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   .navbar-custom {
     padding: 0 1rem;
     height: 64px;
+    /* Ensure no negative-margin bleed from main.css on mobile */
+    margin: 0 !important;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
   }
 
   .page-content {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+  }
+
+  /* Notification dropdown must not overflow narrow viewports */
+  .dropdown-menu-notification {
+    width: min(320px, calc(100vw - 2rem)) !important;
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  /* Profile dropdown alignment */
+  .dropdown-menu-profile {
+    right: 0 !important;
+    left: auto !important;
   }
 }
 
@@ -876,13 +898,15 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   background: rgba(255, 255, 255, 0.1);
   color: #FFFFFF;
   border: none;
-  width: 36px;
-  height: 36px;
+  /* 44px minimum touch target (WCAG 2.5.8) */
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: background-color 0.2s;
+  flex-shrink: 0;
 }
 
 .sidebar-close-btn:hover {
@@ -988,4 +1012,100 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------
+   13. Extra Small (xs) Screen Fixes — phones < 480px
+   --------------------------------------------------------------------- */
+@media (max-width: 479.98px) {
+  /* Hide "Aksi Cepat" text label — keep icon only to save navbar space */
+  .btn-quick-action span {
+    display: none !important;
+  }
+
+  /* Compact quick-action button to icon-only pill */
+  .btn-quick-action {
+    padding: 0.5rem 0.65rem !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  /* Ensure dropdown menus don't bleed off-screen */
+  .dropdown-menu-notification,
+  .dropdown-menu-profile,
+  .dropdown-menu-quick-action {
+    max-width: calc(100vw - 1.5rem) !important;
+  }
+
+  /* Tighten navbar actions gap */
+  .navbar-actions {
+    gap: 0.4rem !important;
+  }
+
+  /* Smaller action buttons on very narrow screens */
+  .navbar-action-btn {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  /* Page title sizing on tiny screens */
+  .page-title {
+    font-size: 1.25rem !important;
+  }
+
+  /* Flash message padding */
+  .px-3 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* Footer: stack vertically on tiny screens */
+  .footer-custom {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 0.75rem !important;
+  }
+
+  .footer-right {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .footer-links {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 0.75rem 1.25rem !important;
+  }
+
+  /* Card body padding tighter on xs */
+  .card-body {
+    padding: 1rem !important;
+  }
+
+  /* Modal full-width on xs */
+  .modal-dialog {
+    margin: 0.5rem !important;
+    max-width: calc(100% - 1rem) !important;
+  }
+
+  /* Stat value font smaller on xs to prevent overflow */
+  .stat-value {
+    font-size: 1.65rem !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   14. Tablet (sm–md) Responsive Tweaks — 480px to 991px
+   --------------------------------------------------------------------- */
+@media (min-width: 480px) and (max-width: 991.98px) {
+  /* Slightly reduce page-title on tablets */
+  .page-title {
+    font-size: 1.35rem;
+  }
+
+  /* Keep page-header horizontal but allow wrapping */
+  .page-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
 }
