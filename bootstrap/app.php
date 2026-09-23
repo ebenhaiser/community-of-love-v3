@@ -41,8 +41,6 @@ $app = Application::configure(basePath: dirname(__DIR__))
         );
     })->create();
 
-// Alihkan storage dan bootstrap cache ke /tmp untuk serverless Vercel
 $app->useStoragePath('/tmp/storage');
-$app->useBootstrapPath('/tmp');
 
 return $app;
