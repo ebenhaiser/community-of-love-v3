@@ -9,6 +9,10 @@
     },
     "routes": [
         {
+            "src": "/livewire/livewire.js",
+            "dest": "/vendor/livewire/livewire/dist/livewire.js"
+        },
+        {
             "src": "/livewire/(.*)",
             "dest": "/api/index.php"
         },
