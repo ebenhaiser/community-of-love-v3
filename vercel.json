@@ -17,10 +17,6 @@
             "dest": "/storage/app/public/$1"
         },
         {
-            "src": "/(ico|css|js|jpg|png|svg|woff|woff2)",
-            "dest": "/public/$1"
-        },
-        {
             "src": "/(.*)",
             "dest": "/api/index.php"
         }
