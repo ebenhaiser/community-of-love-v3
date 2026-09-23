@@ -63,8 +63,25 @@ return [
             'engine' => null,
 
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-    Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-]) : [],
+                Mysql::ATTR_SSL_CA => (function () {
+                    $ca = env('MYSQL_ATTR_SSL_CA');
+
+                    if (!$ca) {
+                        return null;
+                    }
+
+                    // Absolute path → gunakan langsung
+                    if (
+                        str_starts_with($ca, '/') ||
+                        preg_match('/^[A-Za-z]:[\\\\\/]/', $ca)
+                    ) {
+                        return $ca;
+                    }
+
+                    // Relative path → ubah menjadi absolute path
+                    return base_path($ca);
+                })(),
+            ]) : [],
         ],
 
         'mariadb' => [
