@@ -42,6 +42,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         );
     })->create();
 
-$app->useStoragePath('/tmp/storage');
+// Gunakan /tmp/storage HANYA saat berjalan di serverless Vercel
+if (env('VERCEL')) {
+    $app->useStoragePath('/tmp/storage');
+}
 
 return $app;
