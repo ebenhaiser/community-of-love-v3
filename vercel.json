@@ -17,6 +17,10 @@
             "dest": "/storage/app/public/$1"
         },
         {
+            "src": "/(spark-admin-1.0.0|css|js|images|ico|jpg|png|svg|woff|woff2)/(.*)",
+            "dest": "/public/$1/$2"
+        },
+        {
             "src": "/(.*)",
             "dest": "/api/index.php"
         }
