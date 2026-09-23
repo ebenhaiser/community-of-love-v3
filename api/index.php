@@ -7,6 +7,9 @@
 //     echo $e->getTraceAsString();
 // }
 
+
+error_log('CA TEST: ' . (__DIR__ . '/../certs/ca.pem') . ' | EXISTS: ' . (file_exists(__DIR__ . '/../certs/ca.pem') ? 'YES' : 'NO'));
+
 // Pastikan folder storage dan sessions di /tmp otomatis dibuat
 @mkdir('/tmp/storage/framework/sessions', 0777, true);
 @mkdir('/tmp/storage/framework/views', 0777, true);
