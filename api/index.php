@@ -8,7 +8,20 @@
 // }
 
 
-error_log('CA TEST: ' . (__DIR__ . '/../certs/ca.pem') . ' | EXISTS: ' . (file_exists(__DIR__ . '/../certs/ca.pem') ? 'YES' : 'NO'));
+// error_log('CA TEST: ' . (__DIR__ . '/../certs/ca.pem') . ' | EXISTS: ' . (file_exists(__DIR__ . '/../certs/ca.pem') ? 'YES' : 'NO'));
+
+$ca = __DIR__ . '/../certs/ca.pem';
+
+if (isset($_GET['test-ca'])) {
+    header('Content-Type: text/plain');
+
+    echo "DIR: " . __DIR__ . PHP_EOL;
+    echo "CA: " . $ca . PHP_EOL;
+    echo "EXISTS: " . (file_exists($ca) ? 'YES' : 'NO') . PHP_EOL;
+    echo "READABLE: " . (is_readable($ca) ? 'YES' : 'NO') . PHP_EOL;
+
+    exit;
+}
 
 // Pastikan folder storage dan sessions di /tmp otomatis dibuat
 @mkdir('/tmp/storage/framework/sessions', 0777, true);
