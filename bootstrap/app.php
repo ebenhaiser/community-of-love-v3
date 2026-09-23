@@ -20,6 +20,7 @@
 //         );
 //     })->create();
 
+
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -40,7 +41,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
         );
     })->create();
 
-// Alihkan storage path ke /tmp agar bisa ditulis di Vercel
+// Alihkan storage dan bootstrap cache ke /tmp untuk serverless Vercel
 $app->useStoragePath('/tmp/storage');
+$app->useBootstrapPath('/tmp');
 
 return $app;
