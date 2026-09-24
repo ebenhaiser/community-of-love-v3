@@ -5,6 +5,7 @@ namespace App\Livewire\Master;
 use App\Models\Role;
 use App\Models\Shepherd;
 use App\Models\User;
+use App\Helpers\AppHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
@@ -17,6 +18,8 @@ use Livewire\WithPagination;
 class AppUserManager extends Component
 {
     use WithPagination;
+
+    public string $defaultPassword = '';
 
     public string $search = '';
 
@@ -50,6 +53,7 @@ class AppUserManager extends Component
     public function mount(): void
     {
         $this->authorizeMaster();
+        $this->defaultPassword = AppHelper::getSettings('default_user_password') ?? '';
     }
 
     /**
@@ -185,14 +189,14 @@ class AppUserManager extends Component
                 'phone' => $this->phone ?: null,
                 'role_id' => $this->role_id,
                 'shepherd_id' => $this->shepherd_id ?: null,
-                'password_hash' => Hash::make('password123'),
+                'password_hash' => Hash::make($this->defaultPassword),
                 'is_active' => $this->is_active,
                 'is_deleted' => false,
                 'created_by' => Auth::id(),
                 'date_created' => now(),
             ]);
 
-            session()->flash('success', "Pengguna baru '{$newUser->full_name}' berhasil ditambahkan dengan password default (password123).");
+            session()->flash('success', "Pengguna baru '{$newUser->full_name}' berhasil ditambahkan dengan password default ($this->defaultPassword).");
         }
 
         $this->closeModal();
@@ -202,12 +206,12 @@ class AppUserManager extends Component
     {
         $this->authorizeMaster();
         $target = User::findOrFail($userId);
-        $target->password_hash = Hash::make('password123');
+        $target->password_hash = Hash::make($this->defaultPassword);
         $target->modified_by = Auth::id();
         $target->date_modified = now();
         $target->save();
 
-        session()->flash('success', "Password akun '{$target->full_name}' ({$target->username}) berhasil direset ke default: password123");
+        session()->flash('success', "Password akun '{$target->full_name}' ({$target->username}) berhasil direset ke default: $this->defaultPassword");
     }
 
     public function toggleActive(int $userId): void

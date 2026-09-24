@@ -152,8 +152,8 @@
                     <!-- Reset Password Button -->
                     <button type="button" class="btn btn-outline-warning"
                             wire:click="resetPassword({{ $user->user_id }})"
-                            wire:confirm="Apakah Anda yakin ingin mereset password akun '{{ $user->username }}' ke default (password123)?"
-                            title="Reset Password ke default (password123)">
+                            wire:confirm="Apakah Anda yakin ingin mereset password akun '{{ $user->username }}' ke default ({{ $defaultPassword }})?"
+                            title="Reset Password ke default ({{ $defaultPassword }})">
                       <i class="bi bi-key-fill"></i>
                     </button>
 
@@ -210,7 +210,7 @@
                 <div class="alert alert-info py-2 px-3 mb-3 small d-flex align-items-center gap-2">
                   <i class="bi bi-info-circle-fill fs-5 text-info"></i>
                   <div>
-                    Password default akun baru otomatis disetel: <strong class="badge bg-light text-dark border">password123</strong>
+                    Password default akun baru otomatis disetel: <strong class="badge bg-light text-dark border">{{ $defaultPassword }}</strong>
                   </div>
                 </div>
               @endif
