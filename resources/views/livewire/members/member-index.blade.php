@@ -432,10 +432,10 @@
                     <label for="kom_status" class="form-label fw-semibold small">Status Kelas KOM (GBI Salemba) <span class="text-danger">*</span></label>
                     <select id="kom_status" wire:model="kom_status" class="form-select @error('kom_status') is-invalid @enderror">
                       <option value="Belum KOM">Belum KOM</option>
-                      <option value="KOM 100">KOM 100 (Dasar Keselamatan & Hidup Baru)</option>
-                      <option value="KOM 200">KOM 200 (Doktrin & Pengajaran)</option>
-                      <option value="KOM 300">KOM 300 (Kepemimpinan & Pelayanan)</option>
-                      <option value="KOM 400">KOM 400 (Tugas Penggembalaan)</option>
+                      <option value="KOM 100">KOM 100 (The Seeker)</option>
+                      <option value="KOM 200">KOM 200 (The Servant)</option>
+                      <option value="KOM 300">KOM 300 (The Soldier)</option>
+                      <option value="KOM 400">KOM 400 (The Steward)</option>
                     </select>
                     @error('kom_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     <div class="form-text small">Kelas Orientasi Melayani / Pembinaan jemaat GBI Salemba.</div>
