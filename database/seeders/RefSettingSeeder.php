@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\RefSetting;
+use Illuminate\Database\Seeder;
 
 class RefSettingSeeder extends Seeder
 {
@@ -28,7 +27,7 @@ class RefSettingSeeder extends Seeder
                 'name' => 'url_prefix',
                 'type' => 'string',
                 'value' => 'https://http://127.0.0.1:8000/',
-            ]
+            ],
         ];
         foreach ($settings as $setting) {
             RefSetting::create($setting);

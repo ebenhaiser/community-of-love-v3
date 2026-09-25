@@ -25,10 +25,16 @@
       </ul>
     </div>
 
-    <!-- Group: Komunitas COOL -->
+    <!-- Group: Jemaat & Komunitas COOL -->
     <div class="sidebar-menu-section">
-      <div class="sidebar-menu-title">Komunitas COOL</div>
+      <div class="sidebar-menu-title">Jemaat & Komunitas COOL</div>
       <ul class="sidebar-menu-list">
+        <li class="sidebar-menu-item">
+          <a href="{{ url('/members') }}" class="sidebar-menu-link {{ request()->is('members*') ? 'active' : '' }}" id="menu-members" title="Data Jemaat GBI Salemba">
+            <i class="bi bi-person-vcard-fill"></i>
+            <span>Data Jemaat</span>
+          </a>
+        </li>
         <li class="sidebar-menu-item">
           <a href="{{ url('/cools') }}" class="sidebar-menu-link {{ request()->is('cools*') ? 'active' : '' }}" id="menu-cools" title="Kelompok COOL">
             <i class="bi bi-people-fill"></i>
@@ -39,12 +45,6 @@
           <a href="{{ url('/shepherds') }}" class="sidebar-menu-link {{ request()->is('shepherds*') ? 'active' : '' }}" id="menu-shepherds" title="Gembala COOL">
             <i class="bi bi-person-badge-fill"></i>
             <span>Gembala COOL</span>
-          </a>
-        </li>
-        <li class="sidebar-menu-item">
-          <a href="{{ url('/members') }}" class="sidebar-menu-link {{ request()->is('members*') ? 'active' : '' }}" id="menu-members" title="Anggota COOL">
-            <i class="bi bi-person-lines-fill"></i>
-            <span>Anggota COOL</span>
           </a>
         </li>
       </ul>

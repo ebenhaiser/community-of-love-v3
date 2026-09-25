@@ -20,6 +20,14 @@ class Member extends Model
     protected $fillable = [
         'member_code',
         'name',
+        'gender',
+        'birthplace',
+        'birthdate',
+        'address',
+        'social_media',
+        'kom_status',
+        'marital_status',
+        'is_in_cool',
         'phone',
         'email',
         'join_date',
@@ -37,6 +45,8 @@ class Member extends Model
     protected function casts(): array
     {
         return [
+            'birthdate' => 'date',
+            'is_in_cool' => 'boolean',
             'join_date' => 'date',
             'is_active' => 'boolean',
             'is_deleted' => 'boolean',

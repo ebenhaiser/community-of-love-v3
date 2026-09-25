@@ -67,6 +67,7 @@ class Login extends Component
     public function render()
     {
         $this->defaultPassword = AppHelper::getSettings('default_user_password') ?? 'password123';
+
         return view('livewire.auth.login');
     }
 }

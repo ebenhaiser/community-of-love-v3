@@ -171,7 +171,7 @@ return [
 
     // 'secure' => env('SESSION_SECURE_COOKIE'),
     'secure' => env('SESSION_SECURE_COOKIE', true),
-'same_site' => 'lax',
+    'same_site' => 'lax',
 
     /*
     |--------------------------------------------------------------------------
@@ -231,7 +231,5 @@ return [
     */
 
     'serialization' => 'json',
-
-
 
 ];

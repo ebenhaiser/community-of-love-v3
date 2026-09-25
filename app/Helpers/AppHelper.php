@@ -12,12 +12,14 @@ class AppHelper
     public static function isShepherdOrAdmin(): bool
     {
         $user = Auth::user();
+
         return $user && $user->role && in_array($user->role->name, ['SHEPHERD', 'ADMIN', 'SUPERADMIN']);
     }
 
     public static function getShepherdId(): ?int
     {
         $user = Auth::user();
+
         return $user && $user->role && $user->role->name === 'SHEPHERD' ? $user->shepherd_id : null;
     }
 
@@ -35,7 +37,7 @@ class AppHelper
         $qr = QrAccess::with('cool')->findOrFail($qrAccessId);
         $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
 
-        return !$isShepherd || ($isShepherd && $qr->cool && $qr->cool->shepherd_id === $user->shepherd_id);
+        return ! $isShepherd || ($isShepherd && $qr->cool && $qr->cool->shepherd_id === $user->shepherd_id);
     }
 
     public static function getSettings(string $name)

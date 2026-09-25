@@ -38,7 +38,9 @@ class Dashboard extends Component
                 $q->whereIn('cool_id', $coolIds)->where('is_deleted', false);
             });
         }
-        $totalMembers = $memberQuery->count();
+        $totalMembers = (clone $memberQuery)->count();
+        $inCoolMembers = (clone $memberQuery)->where('is_in_cool', true)->count();
+        $notInCoolMembers = (clone $memberQuery)->where('is_in_cool', false)->count();
 
         $activityQuery = Activity::where('is_deleted', false);
         if ($isShepherd) {
@@ -107,6 +109,8 @@ class Dashboard extends Component
             'totalCools',
             'totalShepherds',
             'totalMembers',
+            'inCoolMembers',
+            'notInCoolMembers',
             'totalActivities',
             'attendanceRate',
             'presentCount',

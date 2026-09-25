@@ -1,13 +1,13 @@
 <?php
 
+use App\Livewire\AboutUs\AboutUs;
 use App\Livewire\Activities\ActivityIndex;
 use App\Livewire\Attendances\AttendanceManager;
-use App\Livewire\AboutUs\AboutUs;
 use App\Livewire\Auth\Login;
+use App\Livewire\Bible\Reader;
 use App\Livewire\Cools\CoolDetail;
 use App\Livewire\Cools\CoolIndex;
 use App\Livewire\Dashboard;
-use App\Livewire\Bible\Reader;
 use App\Livewire\Events\EventIndex;
 use App\Livewire\FollowUps\FollowUpIndex;
 use App\Livewire\Master\AppUserManager;
@@ -79,7 +79,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', UserProfile::class)->name('profile.show');
     Route::get('/settings', UserProfile::class)->name('settings.show');
     Route::get('/master/users', AppUserManager::class)->name('master.users.index');
-    
+
     // Tentang Kami
     Route::get('/about-us', AboutUs::class)->name('about-us.index');
 });

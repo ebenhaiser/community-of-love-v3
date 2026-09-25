@@ -46,7 +46,7 @@ class SonnyLabBibleService
 
         if ($response->failed()) {
             throw new RuntimeException(
-                'Gagal menghubungi Bible API. HTTP ' . $response->status()
+                'Gagal menghubungi Bible API. HTTP '.$response->status()
             );
         }
 

@@ -12,7 +12,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 #[Layout('layouts.app')]
-#[Title('Manajemen Anggota COOL')]
+#[Title('Data Jemaat & COOL')]
 class MemberIndex extends Component
 {
     use WithPagination;
@@ -23,21 +23,50 @@ class MemberIndex extends Component
 
     public string $statusFilter = '';
 
+    public string $coolStatusFilter = '';
+
+    public string $komFilter = '';
+
+    public string $maritalFilter = '';
+
+    public string $genderFilter = '';
+
     public bool $showModal = false;
+
+    public bool $showDetailModal = false;
 
     public ?int $editingMemberId = null;
 
+    public ?int $viewingMemberId = null;
+
+    // Form fields
     public string $member_code = '';
 
     public string $name = '';
+
+    public string $gender = 'Laki-laki';
+
+    public string $birthplace = '';
+
+    public string $birthdate = '';
+
+    public string $address = '';
+
+    public string $social_media = '';
+
+    public string $kom_status = 'Belum KOM';
+
+    public string $marital_status = 'Belum Menikah';
+
+    public bool $is_in_cool = false;
+
+    public ?int $cool_id = null;
 
     public string $phone = '';
 
     public string $email = '';
 
     public string $join_date = '';
-
-    public ?int $cool_id = null;
 
     public string $status = 'ACTIVE';
 
@@ -60,9 +89,43 @@ class MemberIndex extends Component
         $this->resetPage();
     }
 
+    public function updatingCoolStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingKomFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingMaritalFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingGenderFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function mount(): void
     {
         $this->join_date = date('Y-m-d');
+    }
+
+    public function updatedIsInCool(bool $value): void
+    {
+        if (! $value) {
+            $this->cool_id = null;
+        }
+    }
+
+    public function updatedCoolId($value): void
+    {
+        if (! empty($value)) {
+            $this->is_in_cool = true;
+        }
     }
 
     public function updatedStatus(string $value): void
@@ -86,7 +149,7 @@ class MemberIndex extends Component
     public function openCreateModal(): void
     {
         $this->resetForm();
-        $this->member_code = 'MBR-'.date('Y').'-'.str_pad((string) (Member::count() + 1), 4, '0', STR_PAD_LEFT);
+        $this->member_code = 'JMT-'.date('Y').'-'.str_pad((string) (Member::count() + 1), 4, '0', STR_PAD_LEFT);
         $this->join_date = date('Y-m-d');
 
         $user = Auth::user();
@@ -94,6 +157,7 @@ class MemberIndex extends Component
             $firstCool = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->first();
             if ($firstCool) {
                 $this->cool_id = $firstCool->cool_id;
+                $this->is_in_cool = true;
             }
         }
 
@@ -110,13 +174,20 @@ class MemberIndex extends Component
             $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
             $belongsToShepherd = $member->coolMembers()->whereIn('cool_id', $shepherdCoolIds)->where('is_deleted', false)->exists();
             if (! $belongsToShepherd) {
-                abort(403, 'Anda hanya dapat mengakses data anggota kelompok COOL Anda sendiri.');
+                abort(403, 'Anda hanya dapat mengakses data jemaat kelompok COOL Anda sendiri.');
             }
         }
 
         $this->editingMemberId = $member->member_id;
         $this->member_code = $member->member_code;
         $this->name = $member->name;
+        $this->gender = $member->gender ?? 'Laki-laki';
+        $this->birthplace = $member->birthplace ?? '';
+        $this->birthdate = $member->birthdate ? $member->birthdate->format('Y-m-d') : '';
+        $this->address = $member->address ?? '';
+        $this->social_media = $member->social_media ?? '';
+        $this->kom_status = $member->kom_status ?? 'Belum KOM';
+        $this->marital_status = $member->marital_status ?? 'Belum Menikah';
         $this->phone = $member->phone ?? '';
         $this->email = $member->email ?? '';
         $this->join_date = $member->join_date ? $member->join_date->format('Y-m-d') : date('Y-m-d');
@@ -125,13 +196,41 @@ class MemberIndex extends Component
 
         $activeCoolMember = $member->coolMembers->first();
         $this->cool_id = $activeCoolMember ? $activeCoolMember->cool_id : null;
+        $this->is_in_cool = (bool) ($member->is_in_cool || $this->cool_id !== null);
 
         $this->showModal = true;
     }
 
+    public function openDetailModal(int $memberId): void
+    {
+        $this->viewingMemberId = $memberId;
+        $this->showDetailModal = true;
+    }
+
+    public function closeDetailModal(): void
+    {
+        $this->showDetailModal = false;
+        $this->viewingMemberId = null;
+    }
+
     public function resetForm(): void
     {
-        $this->reset(['editingMemberId', 'member_code', 'name', 'phone', 'email', 'cool_id']);
+        $this->reset([
+            'editingMemberId',
+            'member_code',
+            'name',
+            'birthplace',
+            'birthdate',
+            'address',
+            'social_media',
+            'phone',
+            'email',
+            'cool_id',
+        ]);
+        $this->gender = 'Laki-laki';
+        $this->kom_status = 'Belum KOM';
+        $this->marital_status = 'Belum Menikah';
+        $this->is_in_cool = false;
         $this->status = 'ACTIVE';
         $this->is_active = true;
         $this->join_date = date('Y-m-d');
@@ -143,7 +242,15 @@ class MemberIndex extends Component
         $rules = [
             'member_code' => 'required|string|max:50|unique:members,member_code,'.($this->editingMemberId ?? 'NULL').',member_id',
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
+            'gender' => 'required|string|max:20',
+            'birthplace' => 'nullable|string|max:100',
+            'birthdate' => 'nullable|date',
+            'address' => 'nullable|string|max:1000',
+            'social_media' => 'nullable|string|max:255',
+            'kom_status' => 'required|string|max:50',
+            'marital_status' => 'required|string|max:50',
+            'is_in_cool' => 'boolean',
+            'phone' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
             'join_date' => 'required|date',
             'cool_id' => 'nullable|exists:cools,cool_id',
@@ -152,9 +259,12 @@ class MemberIndex extends Component
         ];
 
         $this->validate($rules, [
-            'member_code.required' => 'Nomor ID Anggota wajib diisi.',
-            'member_code.unique' => 'Nomor ID Anggota sudah terdaftar.',
-            'name.required' => 'Nama lengkap anggota wajib diisi.',
+            'member_code.required' => 'Nomor ID Jemaat wajib diisi.',
+            'member_code.unique' => 'Nomor ID Jemaat sudah terdaftar.',
+            'name.required' => 'Nama lengkap jemaat wajib diisi.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'kom_status.required' => 'Status KOM wajib dipilih.',
+            'marital_status.required' => 'Status pernikahan wajib dipilih.',
             'join_date.required' => 'Tanggal bergabung wajib diisi.',
         ]);
 
@@ -164,9 +274,19 @@ class MemberIndex extends Component
             $this->status = 'INACTIVE';
         }
 
+        $effectiveIsInCool = $this->is_in_cool && ! empty($this->cool_id);
+
         $data = [
             'member_code' => $this->member_code,
             'name' => $this->name,
+            'gender' => $this->gender,
+            'birthplace' => $this->birthplace ?: null,
+            'birthdate' => $this->birthdate ?: null,
+            'address' => $this->address ?: null,
+            'social_media' => $this->social_media ?: null,
+            'kom_status' => $this->kom_status,
+            'marital_status' => $this->marital_status,
+            'is_in_cool' => $effectiveIsInCool,
             'phone' => $this->phone ?: null,
             'email' => $this->email ?: null,
             'join_date' => $this->join_date,
@@ -178,10 +298,10 @@ class MemberIndex extends Component
         $user = Auth::user();
         $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
 
-        if ($isShepherd) {
+        if ($isShepherd && $this->cool_id) {
             $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
-            if (! $this->cool_id || ! in_array($this->cool_id, $shepherdCoolIds)) {
-                $this->addError('cool_id', 'Anda hanya dapat menugaskan anggota ke kelompok COOL Anda sendiri.');
+            if (! in_array($this->cool_id, $shepherdCoolIds)) {
+                $this->addError('cool_id', 'Anda hanya dapat menugaskan jemaat ke kelompok COOL Anda sendiri.');
 
                 return;
             }
@@ -198,7 +318,7 @@ class MemberIndex extends Component
                     ->exists();
 
                 if (! $belongsToShepherd) {
-                    abort(403, 'Anda hanya dapat mengedit anggota kelompok COOL Anda sendiri.');
+                    abort(403, 'Anda hanya dapat mengedit jemaat kelompok COOL Anda sendiri.');
                 }
             }
 
@@ -212,7 +332,7 @@ class MemberIndex extends Component
                 ->where('is_deleted', false)
                 ->first();
 
-            if ($this->cool_id) {
+            if ($effectiveIsInCool && $this->cool_id) {
                 if (! $existingActive || $existingActive->cool_id !== (int) $this->cool_id) {
                     if ($existingActive) {
                         $existingActive->update([
@@ -250,7 +370,7 @@ class MemberIndex extends Component
                 ]);
             }
 
-            session()->flash('success', "Data anggota '{$member->name}' berhasil diperbarui.");
+            session()->flash('success', "Data jemaat '{$member->name}' berhasil diperbarui.");
         } else {
             $member = Member::create(array_merge($data, [
                 'is_deleted' => false,
@@ -258,7 +378,7 @@ class MemberIndex extends Component
                 'date_created' => now(),
             ]));
 
-            if ($this->cool_id) {
+            if ($effectiveIsInCool && $this->cool_id) {
                 CoolMember::create([
                     'cool_id' => $this->cool_id,
                     'member_id' => $member->member_id,
@@ -270,7 +390,7 @@ class MemberIndex extends Component
                 ]);
             }
 
-            session()->flash('success', "Anggota baru '{$member->name}' berhasil ditambahkan.");
+            session()->flash('success', "Data jemaat baru '{$member->name}' berhasil ditambahkan.");
         }
 
         $this->showModal = false;
@@ -304,7 +424,7 @@ class MemberIndex extends Component
             'date_deleted' => now(),
         ]);
 
-        session()->flash('success', "Data anggota '{$member->name}' berhasil dihapus (soft delete).");
+        session()->flash('success', "Data jemaat '{$member->name}' berhasil dihapus (soft delete).");
     }
 
     public function render()
@@ -320,7 +440,7 @@ class MemberIndex extends Component
                 ->toArray();
         }
 
-        $members = Member::where('is_deleted', false)
+        $query = Member::where('is_deleted', false)
             ->when($isShepherd, function ($q) use ($shepherdCoolIds) {
                 $q->whereHas('coolMembers', function ($sub) use ($shepherdCoolIds) {
                     $sub->whereIn('cool_id', $shepherdCoolIds)->where('is_deleted', false);
@@ -330,6 +450,22 @@ class MemberIndex extends Component
                 $q->whereHas('coolMembers', function ($sub) {
                     $sub->where('cool_id', $this->coolFilter)->where('is_deleted', false);
                 });
+            })
+            ->when($this->coolStatusFilter, function ($q) {
+                if ($this->coolStatusFilter === 'in_cool') {
+                    $q->where('is_in_cool', true);
+                } elseif ($this->coolStatusFilter === 'not_in_cool') {
+                    $q->where('is_in_cool', false);
+                }
+            })
+            ->when($this->komFilter, function ($q) {
+                $q->where('kom_status', $this->komFilter);
+            })
+            ->when($this->maritalFilter, function ($q) {
+                $q->where('marital_status', $this->maritalFilter);
+            })
+            ->when($this->genderFilter, function ($q) {
+                $q->where('gender', $this->genderFilter);
             })
             ->when($this->statusFilter, function ($q) {
                 if ($this->statusFilter === 'ACTIVE' || $this->statusFilter === 'active') {
@@ -347,22 +483,47 @@ class MemberIndex extends Component
                 }
             })
             ->when($this->search, function ($q) {
-                $q->where(function ($sub) {
-                    $sub->where('name', 'like', "%{$this->search}%")
-                        ->orWhere('member_code', 'like', "%{$this->search}%")
-                        ->orWhere('phone', 'like', "%{$this->search}%")
-                        ->orWhere('email', 'like', "%{$this->search}%");
+                $term = "%{$this->search}%";
+                $q->where(function ($sub) use ($term) {
+                    $sub->where('name', 'like', $term)
+                        ->orWhere('member_code', 'like', $term)
+                        ->orWhere('phone', 'like', $term)
+                        ->orWhere('email', 'like', $term)
+                        ->orWhere('address', 'like', $term)
+                        ->orWhere('birthplace', 'like', $term)
+                        ->orWhere('social_media', 'like', $term);
                 });
             })
             ->with(['cools' => fn ($q) => $q->wherePivot('is_deleted', false)->where('cools.is_deleted', false)])
-            ->orderBy('name')
-            ->paginate(12);
+            ->orderBy('name');
+
+        $members = $query->paginate(12);
 
         $cools = Cool::where('is_deleted', false)
             ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
             ->orderBy('name')
             ->get();
 
-        return view('livewire.members.member-index', compact('members', 'cools', 'isShepherd'));
+        // Calculate summary counts for fast overview
+        $statsBase = Member::where('is_deleted', false)
+            ->when($isShepherd, function ($q) use ($shepherdCoolIds) {
+                $q->whereHas('coolMembers', function ($sub) use ($shepherdCoolIds) {
+                    $sub->whereIn('cool_id', $shepherdCoolIds)->where('is_deleted', false);
+                });
+            });
+
+        $stats = [
+            'total' => (clone $statsBase)->count(),
+            'in_cool' => (clone $statsBase)->where('is_in_cool', true)->count(),
+            'not_in_cool' => (clone $statsBase)->where('is_in_cool', false)->count(),
+            'ikut_kom' => (clone $statsBase)->whereIn('kom_status', ['KOM 100', 'KOM 200', 'KOM 300', 'KOM 400'])->count(),
+        ];
+
+        $detailMember = null;
+        if ($this->showDetailModal && $this->viewingMemberId) {
+            $detailMember = Member::with(['cools' => fn ($q) => $q->wherePivot('is_deleted', false)])->find($this->viewingMemberId);
+        }
+
+        return view('livewire.members.member-index', compact('members', 'cools', 'isShepherd', 'stats', 'detailMember'));
     }
 }

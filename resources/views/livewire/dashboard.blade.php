@@ -2,8 +2,8 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <h1 class="page-title">Dashboard Manajemen COOL</h1>
-      <p class="page-subtitle">Sistem Informasi & Manajemen Komunitas Community of Love (COOL) GBI Salemba</p>
+      <h1 class="page-title">Dashboard COOL & Data Jemaat</h1>
+      <p class="page-subtitle">Sistem Informasi Pengelolaan Data Jemaat & Komunitas Community of Love (COOL) GBI Salemba</p>
     </div>
     <div class="d-flex align-items-center gap-2">
       <span class="badge bg-success px-3 py-2 fs-6 rounded-pill">
@@ -50,16 +50,18 @@
       </div>
     </div>
 
-    <!-- Stat Card 3: Anggota -->
+    <!-- Stat Card 3: Data Jemaat -->
     <div class="col-12 col-sm-6 col-xl-3">
       <div class="card card-stat h-100 p-3">
-        <div class="card-header border-0 p-0 mb-2">
-          <span class="stat-label">Anggota Jemaat</span>
+        <div class="card-header border-0 p-0 mb-2 d-flex justify-content-between align-items-center">
+          <span class="stat-label">Total Data Jemaat</span>
+          <a href="{{ url('/members') }}" class="small text-decoration-none text-success fw-medium">Lihat Semua</a>
         </div>
         <div class="stat-value">{{ $totalMembers }}</div>
-        <div class="trend-badge trend-up mt-2">
-          <i class="bi bi-people-fill"></i>
-          <span>Terdaftar di kelompok</span>
+        <div class="trend-badge trend-up mt-2 d-flex justify-content-between">
+          <span><i class="bi bi-heart-pulse text-success me-1"></i>{{ $inCoolMembers }} Ber-COOL</span>
+          <span class="text-muted">|</span>
+          <span class="text-warning-emphasis"><i class="bi bi-dash-circle me-1"></i>{{ $notInCoolMembers }} Belum</span>
         </div>
       </div>
     </div>

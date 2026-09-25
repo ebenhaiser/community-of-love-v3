@@ -2,9 +2,9 @@
 
 namespace App\Livewire\QrAccess;
 
+use App\Helpers\AppHelper;
 use App\Models\Cool;
 use App\Models\QrAccess;
-use App\Helpers\AppHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -113,7 +113,7 @@ class QrAccessManager extends Component
             'date_created' => now(),
         ]);
 
-        session()->flash('success', "Akses QR berhasil dibuat untuk {$cool->name}. Default PIN: " . $defaultPin);
+        session()->flash('success', "Akses QR berhasil dibuat untuk {$cool->name}. Default PIN: ".$defaultPin);
     }
 
     public function render()

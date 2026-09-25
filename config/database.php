@@ -66,7 +66,7 @@ return [
                 Mysql::ATTR_SSL_CA => (function () {
                     $ca = env('MYSQL_ATTR_SSL_CA');
 
-                    if (!$ca) {
+                    if (! $ca) {
                         return null;
                     }
 

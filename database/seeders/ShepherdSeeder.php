@@ -43,6 +43,33 @@ class ShepherdSeeder extends Seeder
                 'is_deleted' => false,
                 'date_created' => $now,
             ],
+            [
+                'shepherd_id' => 4,
+                'name' => 'Ps. Maria Magdalena',
+                'phone' => '081234567893',
+                'email' => 'maria.magdalena@gbisalemba.org',
+                'is_active' => true,
+                'is_deleted' => false,
+                'date_created' => $now,
+            ],
+            [
+                'shepherd_id' => 5,
+                'name' => 'Ps. Andreas Setiawan',
+                'phone' => '081234567894',
+                'email' => 'andreas.setiawan@gbisalemba.org',
+                'is_active' => true,
+                'is_deleted' => false,
+                'date_created' => $now,
+            ],
+            [
+                'shepherd_id' => 6,
+                'name' => 'Ps. Ruth Damayanti',
+                'phone' => '081234567895',
+                'email' => 'ruth.damayanti@gbisalemba.org',
+                'is_active' => true,
+                'is_deleted' => false,
+                'date_created' => $now,
+            ],
         ];
 
         foreach ($shepherds as $shepherd) {
