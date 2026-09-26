@@ -16,6 +16,7 @@ use App\Livewire\Members\MemberIndex;
 use App\Livewire\Messages\MessageInbox;
 use App\Livewire\Profile\UserProfile;
 use App\Livewire\Public\CoolPortal;
+use App\Livewire\Public\MemberRegistration;
 use App\Livewire\QrAccess\QrAccessManager;
 use App\Livewire\Statistics\AttendanceStatistics;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,10 @@ use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::get('/login', Login::class)->name('login')->middleware('guest');
+Route::get('/daftar-jemaat', MemberRegistration::class)->name('jemaat.register');
+Route::get('/register-jemaat', function () {
+    return redirect()->route('jemaat.register');
+});
 Route::get('/c/{qrToken}', CoolPortal::class)->name('cool.portal');
 
 Route::get('/bible', Reader::class)->name('bible.read'); // on dev

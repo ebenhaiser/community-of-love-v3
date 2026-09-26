@@ -144,7 +144,7 @@ class CoolPortal extends Component
         ]);
 
         // Send notification to Shepherd user
-        $shepherdUser = User::where('shepherd_id', $cool->shepherd_id)->first();
+        $shepherdUser = User::where('member_id', $cool->shepherd_id)->first();
         if ($shepherdUser) {
             Notification::create([
                 'user_id' => $shepherdUser->user_id,

@@ -159,6 +159,13 @@
             @endif
           </div>
         </div>
+
+        <!-- Link to New Member Public Registration -->
+        <div class="mt-3 text-center">
+          <a href="{{ route('jemaat.register', ['cool_id' => $cool->cool_id]) }}" class="text-decoration-none small text-success fw-semibold d-inline-flex align-items-center gap-1">
+            <i class="bi bi-person-plus-fill"></i> Jemaat Baru? Daftarkan Diri di Sini
+          </a>
+        </div>
       </div>
     </div>
   @else

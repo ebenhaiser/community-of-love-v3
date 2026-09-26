@@ -9,7 +9,18 @@
         Pengelolaan basis data jemaat gereja dan integrasi kelompok Community of Love (COOL)
       </p>
     </div>
-    <div class="d-flex align-items-center gap-2">
+    <div class="d-flex align-items-center gap-2" x-data="{ copied: false }">
+      <a href="{{ route('jemaat.register') }}" target="_blank" class="btn btn-outline-success shadow-sm d-flex align-items-center gap-1" title="Buka Formulir Pendaftaran Publik">
+        <i class="bi bi-box-arrow-up-right"></i>
+        <span class="d-none d-sm-inline">Form Publik</span>
+      </a>
+      <button type="button" 
+              class="btn btn-outline-secondary shadow-sm d-flex align-items-center gap-1"
+              @click="navigator.clipboard.writeText('{{ route('jemaat.register') }}'); copied = true; setTimeout(() => copied = false, 2500); $dispatch('notify', { message: 'Tautan form pendaftaran publik berhasil disalin ke clipboard!', type: 'success' })"
+              title="Salin Tautan Pendaftaran Publik">
+        <i class="bi" :class="copied ? 'bi-check2 text-success' : 'bi-link-45deg'"></i>
+        <span class="d-none d-md-inline" x-text="copied ? 'Tersalin!' : 'Salin Tautan'">Salin Tautan</span>
+      </button>
       <button type="button" class="btn btn-success shadow-sm" wire:click="openCreateModal">
         <i class="bi bi-person-plus-fill me-1"></i> Tambah Jemaat
       </button>

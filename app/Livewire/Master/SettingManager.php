@@ -2,12 +2,7 @@
 
 namespace App\Livewire\Master;
 
-use App\Helpers\AppHelper;
-use App\Models\Role;
-use App\Models\Shepherd;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -25,7 +20,6 @@ class SettingManager extends Component
     public function render()
     {
         $this->authorizeMaster();
-        
 
         return view('livewire.master.setting-manager');
     }

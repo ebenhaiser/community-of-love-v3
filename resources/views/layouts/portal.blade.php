@@ -72,7 +72,7 @@
 
     .portal-mobile-frame {
       width: 100%;
-      max-width: 500px;
+      max-width: 560px;
       margin: 0 auto;
     }
 
