@@ -23,7 +23,7 @@ class AppUserSeeder extends Seeder
             [
                 'user_id' => 1,
                 'role_id' => 1,
-                'shepherd_id' => null,
+                'member_id' => null,
                 'username' => 'master',
                 'password_hash' => $defaultPassword,
                 'full_name' => 'Master Administrator',
@@ -36,7 +36,7 @@ class AppUserSeeder extends Seeder
             [
                 'user_id' => 2,
                 'role_id' => 2,
-                'shepherd_id' => 1,
+                'member_id' => 1,
                 'username' => 'gembala.budi',
                 'password_hash' => $defaultPassword,
                 'full_name' => 'Ps. Budi Santoso',
@@ -49,7 +49,7 @@ class AppUserSeeder extends Seeder
             [
                 'user_id' => 3,
                 'role_id' => 2,
-                'shepherd_id' => 2,
+                'member_id' => 2,
                 'username' => 'gembala.hendra',
                 'password_hash' => $defaultPassword,
                 'full_name' => 'Ps. Hendra Wijaya',
@@ -62,7 +62,7 @@ class AppUserSeeder extends Seeder
             [
                 'user_id' => 4,
                 'role_id' => 2,
-                'shepherd_id' => 3,
+                'member_id' => 3,
                 'username' => 'gembala.yohanes',
                 'password_hash' => $defaultPassword,
                 'full_name' => 'Ps. Yohanes Surya',
@@ -75,7 +75,7 @@ class AppUserSeeder extends Seeder
             [
                 'user_id' => 5,
                 'role_id' => 2,
-                'shepherd_id' => 4,
+                'member_id' => 4,
                 'username' => 'gembala.maria',
                 'password_hash' => $defaultPassword,
                 'full_name' => 'Ps. Maria Magdalena',
@@ -88,7 +88,7 @@ class AppUserSeeder extends Seeder
             [
                 'user_id' => 6,
                 'role_id' => 2,
-                'shepherd_id' => 5,
+                'member_id' => 5,
                 'username' => 'gembala.andreas',
                 'password_hash' => $defaultPassword,
                 'full_name' => 'Ps. Andreas Setiawan',

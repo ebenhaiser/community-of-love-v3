@@ -62,6 +62,7 @@ class UserProfile extends Component
         ]);
 
         session()->flash('success', 'Profil berhasil diperbarui.');
+        $this->dispatch('notify', message: 'Profil berhasil diperbarui.', type: 'success');
     }
 
     public function updatePassword(): void
@@ -94,6 +95,7 @@ class UserProfile extends Component
         $this->resetValidation();
 
         session()->flash('success', 'Kata sandi berhasil diperbarui.');
+        $this->dispatch('notify', message: 'Kata sandi berhasil diperbarui.', type: 'success');
     }
 
     public function render()

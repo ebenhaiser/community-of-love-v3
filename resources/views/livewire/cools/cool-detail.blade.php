@@ -22,12 +22,7 @@
     </div>
   </div>
 
-  @if (session()->has('success'))
-    <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
-      <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  @endif
+
 
   <!-- Profile Card -->
   <div class="card shadow-sm border-0 mb-4">
@@ -329,7 +324,13 @@
                 </button>
               </div>
             @else
-              <p class="text-muted">Kelompok ini belum memiliki QR Code akses.</p>
+              <div class="py-4 text-muted">
+                <i class="bi bi-qr-code text-secondary fs-1 d-block mb-2"></i>
+                <p class="small mb-3">Kelompok ini belum memiliki QR Code akses mandiri.</p>
+                <button type="button" class="btn btn-sm btn-success" wire:click="generateMissingQr">
+                  <i class="bi bi-plus-circle me-1"></i> Buat Akses QR & PIN
+                </button>
+              </div>
             @endif
           </div>
         </div>

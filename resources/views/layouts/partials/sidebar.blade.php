@@ -41,12 +41,7 @@
             <span>Data COOL</span>
           </a>
         </li>
-        <li class="sidebar-menu-item">
-          <a href="{{ url('/shepherds') }}" class="sidebar-menu-link {{ request()->is('shepherds*') ? 'active' : '' }}" id="menu-shepherds" title="Gembala COOL">
-            <i class="bi bi-person-badge-fill"></i>
-            <span>Gembala COOL</span>
-          </a>
-        </li>
+
       </ul>
     </div>
 

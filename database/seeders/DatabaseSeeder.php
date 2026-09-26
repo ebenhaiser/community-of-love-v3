@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             AttendanceStatusSeeder::class,
             ActivityTypeSeeder::class,
-            ShepherdSeeder::class,
             AppUserSeeder::class,
             CoolSeeder::class,
             MemberSeeder::class,

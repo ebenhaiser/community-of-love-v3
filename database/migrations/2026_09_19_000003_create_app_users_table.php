@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('app_users', function (Blueprint $table) {
             $table->id('user_id');
             $table->foreignId('role_id')->constrained('roles', 'role_id')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('shepherd_id')->nullable()->constrained('shepherds', 'shepherd_id')->cascadeOnUpdate()->nullOnDelete();
+            $table->unsignedBigInteger('member_id')->nullable()->index();
             $table->string('username', 100)->unique();
             $table->string('password_hash', 255);
             $table->string('full_name', 255);

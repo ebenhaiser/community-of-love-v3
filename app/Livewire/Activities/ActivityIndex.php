@@ -83,8 +83,8 @@ class ActivityIndex extends Component
         $this->status = 'SCHEDULED';
 
         $user = Auth::user();
-        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id) {
-            $firstCool = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->first();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id) {
+            $firstCool = Cool::where('shepherd_id', $user->member_id)->where('is_deleted', false)->first();
             if ($firstCool) {
                 $this->cool_id = $firstCool->cool_id;
             }
@@ -103,8 +103,8 @@ class ActivityIndex extends Component
         $activity = Activity::with('cool')->findOrFail($activityId);
 
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
-        if ($isShepherd && $activity->cool && $activity->cool->shepherd_id !== $user->shepherd_id) {
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
+        if ($isShepherd && $activity->cool && $activity->cool->shepherd_id !== $user->member_id) {
             abort(403, 'Anda hanya dapat mengakses kegiatan kelompok COOL Anda sendiri.');
         }
 
@@ -156,11 +156,11 @@ class ActivityIndex extends Component
 
         $userId = Auth::id() ?? 1;
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         if ($isShepherd) {
             $cool = Cool::find($this->cool_id);
-            if (! $cool || $cool->shepherd_id !== $user->shepherd_id) {
+            if (! $cool || $cool->shepherd_id !== $user->member_id) {
                 $this->addError('cool_id', 'Anda hanya dapat menjadwalkan kegiatan untuk kelompok COOL Anda sendiri.');
 
                 return;
@@ -181,7 +181,7 @@ class ActivityIndex extends Component
 
         if ($this->editingActivityId) {
             $activity = Activity::with('cool')->findOrFail($this->editingActivityId);
-            if ($isShepherd && $activity->cool && $activity->cool->shepherd_id !== $user->shepherd_id) {
+            if ($isShepherd && $activity->cool && $activity->cool->shepherd_id !== $user->member_id) {
                 abort(403, 'Anda tidak memiliki akses untuk mengubah kegiatan kelompok COOL lain.');
             }
 
@@ -190,6 +190,7 @@ class ActivityIndex extends Component
                 'date_modified' => now(),
             ]));
             session()->flash('success', "Kegiatan '{$activity->name}' berhasil diperbarui.");
+            $this->dispatch('notify', message: "Kegiatan '{$activity->name}' berhasil diperbarui.", type: 'success');
         } else {
             $activity = Activity::create(array_merge($data, [
                 'is_deleted' => false,
@@ -197,6 +198,7 @@ class ActivityIndex extends Component
                 'date_created' => now(),
             ]));
             session()->flash('success', "Kegiatan baru '{$activity->name}' berhasil dijadwalkan.");
+            $this->dispatch('notify', message: "Kegiatan baru '{$activity->name}' berhasil dijadwalkan.", type: 'success');
         }
 
         $this->showModal = false;
@@ -207,9 +209,9 @@ class ActivityIndex extends Component
     {
         $activity = Activity::with('cool')->findOrFail($activityId);
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
-        if ($isShepherd && $activity->cool && $activity->cool->shepherd_id !== $user->shepherd_id) {
+        if ($isShepherd && $activity->cool && $activity->cool->shepherd_id !== $user->member_id) {
             abort(403, 'Akses ditolak.');
         }
 
@@ -222,16 +224,17 @@ class ActivityIndex extends Component
         ]);
 
         session()->flash('success', "Kegiatan '{$activity->name}' berhasil dihapus (soft delete).");
+        $this->dispatch('notify', message: "Kegiatan '{$activity->name}' berhasil dihapus.", type: 'success');
     }
 
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $shepherdCoolIds = [];
         if ($isShepherd) {
-            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->member_id)
                 ->where('is_deleted', false)
                 ->pluck('cool_id')
                 ->toArray();
@@ -260,7 +263,7 @@ class ActivityIndex extends Component
             ->paginate(10);
 
         $cools = Cool::where('is_deleted', false)
-            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->member_id))
             ->orderBy('name')
             ->get();
 

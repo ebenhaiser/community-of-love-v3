@@ -22,12 +22,7 @@
     </div>
   </div>
 
-  @if (session()->has('success'))
-    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-      <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  @endif
+
 
   <!-- Metrics Summary Cards -->
   <div class="row g-3 mb-4">

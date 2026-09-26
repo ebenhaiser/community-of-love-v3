@@ -153,8 +153,8 @@ class MemberIndex extends Component
         $this->join_date = date('Y-m-d');
 
         $user = Auth::user();
-        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id) {
-            $firstCool = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->first();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id) {
+            $firstCool = Cool::where('shepherd_id', $user->member_id)->where('is_deleted', false)->first();
             if ($firstCool) {
                 $this->cool_id = $firstCool->cool_id;
                 $this->is_in_cool = true;
@@ -169,9 +169,9 @@ class MemberIndex extends Component
         $member = Member::with(['coolMembers' => fn ($q) => $q->where('is_deleted', false)])->findOrFail($memberId);
 
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
         if ($isShepherd) {
-            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->member_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
             $belongsToShepherd = $member->coolMembers()->whereIn('cool_id', $shepherdCoolIds)->where('is_deleted', false)->exists();
             if (! $belongsToShepherd) {
                 abort(403, 'Anda hanya dapat mengakses data jemaat kelompok COOL Anda sendiri.');
@@ -296,10 +296,10 @@ class MemberIndex extends Component
 
         $userId = Auth::id() ?? 1;
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         if ($isShepherd && $this->cool_id) {
-            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->member_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
             if (! in_array($this->cool_id, $shepherdCoolIds)) {
                 $this->addError('cool_id', 'Anda hanya dapat menugaskan jemaat ke kelompok COOL Anda sendiri.');
 
@@ -311,7 +311,7 @@ class MemberIndex extends Component
             $member = Member::findOrFail($this->editingMemberId);
 
             if ($isShepherd) {
-                $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
+                $shepherdCoolIds = Cool::where('shepherd_id', $user->member_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
                 $belongsToShepherd = CoolMember::where('member_id', $member->member_id)
                     ->whereIn('cool_id', $shepherdCoolIds)
                     ->where('is_deleted', false)
@@ -371,6 +371,7 @@ class MemberIndex extends Component
             }
 
             session()->flash('success', "Data jemaat '{$member->name}' berhasil diperbarui.");
+            $this->dispatch('notify', message: "Data jemaat '{$member->name}' berhasil diperbarui.", type: 'success');
         } else {
             $member = Member::create(array_merge($data, [
                 'is_deleted' => false,
@@ -391,6 +392,7 @@ class MemberIndex extends Component
             }
 
             session()->flash('success', "Data jemaat baru '{$member->name}' berhasil ditambahkan.");
+            $this->dispatch('notify', message: "Data jemaat baru '{$member->name}' berhasil ditambahkan.", type: 'success');
         }
 
         $this->showModal = false;
@@ -400,9 +402,9 @@ class MemberIndex extends Component
     public function deleteMember(int $memberId): void
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
         if ($isShepherd) {
-            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->member_id)->where('is_deleted', false)->pluck('cool_id')->toArray();
             $belongs = CoolMember::where('member_id', $memberId)->whereIn('cool_id', $shepherdCoolIds)->where('is_deleted', false)->exists();
             if (! $belongs) {
                 abort(403, 'Akses ditolak.');
@@ -425,16 +427,17 @@ class MemberIndex extends Component
         ]);
 
         session()->flash('success', "Data jemaat '{$member->name}' berhasil dihapus (soft delete).");
+        $this->dispatch('notify', message: "Data jemaat '{$member->name}' berhasil dihapus.", type: 'success');
     }
 
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $shepherdCoolIds = [];
         if ($isShepherd) {
-            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->member_id)
                 ->where('is_deleted', false)
                 ->pluck('cool_id')
                 ->toArray();
@@ -500,7 +503,7 @@ class MemberIndex extends Component
         $members = $query->paginate(12);
 
         $cools = Cool::where('is_deleted', false)
-            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->member_id))
             ->orderBy('name')
             ->get();
 

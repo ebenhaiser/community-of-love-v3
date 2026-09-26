@@ -32,10 +32,10 @@ class AttendanceStatistics extends Component
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $cools = Cool::where('is_deleted', false)
-            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->member_id))
             ->orderBy('name')
             ->get();
 

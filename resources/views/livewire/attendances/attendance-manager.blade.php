@@ -13,12 +13,7 @@
     @endif
   </div>
 
-  @if (session()->has('success'))
-    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-      <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  @endif
+
 
   <!-- Selection Bar -->
   <div class="card shadow-sm border-0 mb-4">
@@ -169,9 +164,7 @@
                         <i class="bi bi-save"></i>
                       </button>
                     </div>
-                    @if (session()->has('note_saved_' . $member->member_id))
-                      <span class="text-success small"><i class="bi bi-check-circle"></i> {{ session('note_saved_' . $member->member_id) }}</span>
-                    @endif
+
                   </td>
                   <td class="text-center text-muted small">
                     @if ($att && $att->attendance_time)

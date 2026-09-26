@@ -20,19 +20,7 @@
     </div>
   </div>
 
-  @if (session()->has('success'))
-    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-      <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  @endif
 
-  @if (session()->has('error'))
-    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  @endif
 
   <div class="card shadow-sm border-0">
     <div class="card-body">
@@ -121,9 +109,9 @@
                   @endif
                 </td>
                 <td>
-                  @if ($user->shepherd)
+                  @if ($user->member)
                     <span class="small text-dark fw-medium">
-                      <i class="bi bi-person-badge text-primary me-1"></i>{{ $user->shepherd->name }}
+                      <i class="bi bi-person-badge text-primary me-1"></i>{{ $user->member->name }}
                     </span>
                   @else
                     <span class="text-muted small">-</span>
@@ -266,7 +254,7 @@
                 <select id="shepherd_id" wire:model="shepherd_id" class="form-select @error('shepherd_id') is-invalid @enderror">
                   <option value="">-- Tidak Terkait Profil Gembala --</option>
                   @foreach ($shepherds as $sh)
-                    <option value="{{ $sh->shepherd_id }}">{{ $sh->name }} ({{ $sh->email ?? $sh->phone ?? '-' }})</option>
+                    <option value="{{ $sh->member_id }}">{{ $sh->name }} ({{ $sh->email ?? $sh->phone ?? '-' }})</option>
                   @endforeach
                 </select>
                 @error('shepherd_id') <div class="invalid-feedback">{{ $message }}</div> @enderror

@@ -29,7 +29,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'role_id',
-        'shepherd_id',
+        'member_id',
         'username',
         'password_hash',
         'full_name',
@@ -90,9 +90,9 @@ class User extends Authenticatable
     /**
      * The shepherd profile associated with this user, if applicable.
      */
-    public function shepherd(): BelongsTo
+    public function member(): BelongsTo
     {
-        return $this->belongsTo(Shepherd::class, 'shepherd_id', 'shepherd_id');
+        return $this->belongsTo(Member::class, 'member_id', 'member_id');
     }
 
     /**

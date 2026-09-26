@@ -91,6 +91,7 @@ class CoolPortal extends Component
 
         $this->isVerified = true;
         $this->pin = '';
+        $this->dispatch('notify', message: 'Verifikasi PIN berhasil! Selamat datang di Portal Jemaat.', type: 'success');
     }
 
     public function exitPortal(): void
@@ -98,6 +99,7 @@ class CoolPortal extends Component
         session()->forget('cool_verified_'.$this->qrToken);
         session()->forget('cool_session_id_'.$this->qrToken);
         $this->isVerified = false;
+        $this->dispatch('notify', message: 'Anda telah keluar dari sesi Portal Jemaat.', type: 'info');
     }
 
     public function sendMessage(): void
@@ -157,6 +159,7 @@ class CoolPortal extends Component
         }
 
         session()->flash('message_sent', 'Puji Tuhan! Pesan / pokok doa Anda telah berhasil terkirim ke Gembala COOL.');
+        $this->dispatch('notify', message: 'Puji Tuhan! Pesan / pokok doa Anda telah berhasil terkirim ke Gembala COOL.', type: 'success');
         $this->reset(['senderName', 'senderPhone', 'messageContent']);
         $this->messageType = 'Pokok Doa';
     }

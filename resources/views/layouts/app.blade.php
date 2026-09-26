@@ -36,23 +36,78 @@
     <!-- Top Navbar Component -->
     @include('layouts.partials.navbar')
 
-    <!-- Flash Messages / Alerts -->
-    <div class="px-3 px-md-4 pt-3">
-      @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-3 shadow-sm" role="alert">
-          <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-          <div>{{ session('success') }}</div>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      @endif
-
-      @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-3 shadow-sm" role="alert">
-          <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-          <div>{{ session('error') }}</div>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      @endif
+    <!-- Global Toast Notifications -->
+    <div x-data="{
+        toasts: [],
+        addToast(payload, defaultType = 'success') {
+            let msg = '';
+            let typ = defaultType;
+            if (typeof payload === 'object' && payload !== null) {
+                if (Array.isArray(payload)) {
+                    if (payload.length > 0 && typeof payload[0] === 'object' && payload[0] !== null) {
+                        msg = payload[0].message || payload[0].msg || '';
+                        typ = payload[0].type || payload[0].status || typ;
+                    } else if (payload.length > 0) {
+                        msg = payload[0];
+                        typ = payload[1] || typ;
+                    }
+                } else {
+                    msg = payload.message || payload.msg || '';
+                    typ = payload.type || payload.status || typ;
+                }
+            } else {
+                msg = String(payload || '');
+            }
+            if (!msg || msg.trim() === '') return;
+            const id = Date.now() + Math.random();
+            this.toasts.push({ id, message: msg, type: typ, show: true });
+            setTimeout(() => {
+                this.removeToast(id);
+            }, 4000);
+        },
+        removeToast(id) {
+            const toast = this.toasts.find(t => t.id === id);
+            if (toast) toast.show = false;
+            setTimeout(() => {
+                this.toasts = this.toasts.filter(t => t.id !== id);
+            }, 400);
+        }
+    }" 
+    @notify.window="addToast($event.detail)"
+    x-init="
+        window.showToast = (msg, typ = 'success') => addToast(msg, typ);
+        @if (session('success')) addToast('{{ addslashes(session('success')) }}', 'success'); @endif
+        @if (session('error')) addToast('{{ addslashes(session('error')) }}', 'error'); @endif
+        @if (session('warning')) addToast('{{ addslashes(session('warning')) }}', 'warning'); @endif
+        @if (session('info')) addToast('{{ addslashes(session('info')) }}', 'info'); @endif
+    "
+    class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        
+        <template x-for="toast in toasts" :key="toast.id">
+            <div x-show="toast.show" 
+                 x-transition.opacity.duration.300ms 
+                 class="toast align-items-center border-0 show mb-2 shadow-lg" 
+                 :class="{
+                     'text-bg-danger': toast.type === 'error' || toast.type === 'danger',
+                     'text-bg-warning text-dark': toast.type === 'warning',
+                     'text-bg-info text-dark': toast.type === 'info',
+                     'text-bg-success': toast.type === 'success' || !toast.type
+                 }" 
+                 role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center fw-medium py-2 px-3">
+                        <i class="bi me-2 fs-5" :class="{
+                            'bi-exclamation-triangle-fill': toast.type === 'error' || toast.type === 'danger',
+                            'bi-exclamation-circle-fill': toast.type === 'warning',
+                            'bi-info-circle-fill': toast.type === 'info',
+                            'bi-check-circle-fill': toast.type === 'success' || !toast.type
+                        }"></i>
+                        <div x-text="toast.message" style="font-size: 13.5px; line-height: 1.4;"></div>
+                    </div>
+                    <button type="button" @click="removeToast(toast.id)" class="btn-close me-2 m-auto" :class="toast.type === 'warning' || toast.type === 'info' ? '' : 'btn-close-white'" aria-label="Close"></button>
+                </div>
+            </div>
+        </template>
     </div>
 
     <!-- Page Header (Optional per view) -->

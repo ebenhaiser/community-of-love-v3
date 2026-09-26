@@ -7,7 +7,6 @@ use App\Models\Attendance;
 use App\Models\Cool;
 use App\Models\Member;
 use App\Models\MemberFollowUp;
-use App\Models\Shepherd;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -20,17 +19,17 @@ class Dashboard extends Component
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $coolQuery = Cool::where('is_deleted', false)->where('is_active', true);
         if ($isShepherd) {
-            $coolQuery->where('shepherd_id', $user->shepherd_id);
+            $coolQuery->where('shepherd_id', $user->member_id);
         }
         $cools = $coolQuery->with(['shepherd', 'members'])->get();
         $coolIds = $cools->pluck('cool_id');
 
         $totalCools = $cools->count();
-        $totalShepherds = $isShepherd ? 1 : Shepherd::where('is_deleted', false)->where('is_active', true)->count();
+        $totalShepherds = $isShepherd ? 1 : Cool::where('is_deleted', false)->where('is_active', true)->distinct('shepherd_id')->count('shepherd_id');
 
         $memberQuery = Member::where('is_deleted', false);
         if ($isShepherd) {

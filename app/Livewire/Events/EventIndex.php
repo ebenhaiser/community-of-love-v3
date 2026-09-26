@@ -173,6 +173,7 @@ class EventIndex extends Component
             }
 
             session()->flash('success', "Event '{$event->name}' berhasil diperbarui.");
+            $this->dispatch('notify', message: "Event '{$event->name}' berhasil diperbarui.", type: 'success');
         } else {
             $event = ChurchEvent::create(array_merge($data, [
                 'is_deleted' => false,
@@ -191,6 +192,7 @@ class EventIndex extends Component
             }
 
             session()->flash('success', "Event baru '{$event->name}' berhasil dibuat.");
+            $this->dispatch('notify', message: "Event baru '{$event->name}' berhasil dibuat.", type: 'success');
         }
 
         $this->showModal = false;
@@ -220,16 +222,17 @@ class EventIndex extends Component
         ]);
 
         session()->flash('success', "Event '{$event->name}' berhasil dihapus.");
+        $this->dispatch('notify', message: "Event '{$event->name}' berhasil dihapus.", type: 'success');
     }
 
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $shepherdCoolIds = [];
         if ($isShepherd) {
-            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->member_id)
                 ->where('is_deleted', false)
                 ->pluck('cool_id')
                 ->toArray();
@@ -262,7 +265,7 @@ class EventIndex extends Component
             ->paginate(10);
 
         $allCools = Cool::where('is_deleted', false)
-            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->member_id))
             ->orderBy('name')
             ->get();
 

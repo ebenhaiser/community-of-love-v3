@@ -3,7 +3,7 @@
 namespace App\Livewire\Cools;
 
 use App\Models\Cool;
-use App\Models\Shepherd;
+use App\Models\Member;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -93,7 +93,7 @@ class CoolIndex extends Component
         $rules = [
             'cool_code' => 'required|string|max:50|unique:cools,cool_code,'.($this->editingCoolId ?? 'NULL').',cool_id',
             'name' => 'required|string|max:255',
-            'shepherd_id' => 'required|exists:shepherds,shepherd_id',
+            'shepherd_id' => 'required|exists:members,member_id',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ];
@@ -120,6 +120,7 @@ class CoolIndex extends Component
                 'date_modified' => now(),
             ]));
             session()->flash('success', "Kelompok COOL '{$cool->name}' berhasil diperbarui.");
+            $this->dispatch('notify', message: "Kelompok COOL '{$cool->name}' berhasil diperbarui.", type: 'success');
         } else {
             $cool = Cool::create(array_merge($data, [
                 'is_deleted' => false,
@@ -127,6 +128,7 @@ class CoolIndex extends Component
                 'date_created' => now(),
             ]));
             session()->flash('success', "Kelompok COOL '{$cool->name}' berhasil ditambahkan.");
+            $this->dispatch('notify', message: "Kelompok COOL '{$cool->name}' berhasil ditambahkan.", type: 'success');
         }
 
         $this->showModal = false;
@@ -148,15 +150,16 @@ class CoolIndex extends Component
         ]);
 
         session()->flash('success', "Kelompok COOL '{$cool->name}' berhasil dihapus (soft delete).");
+        $this->dispatch('notify', message: "Kelompok COOL '{$cool->name}' berhasil dihapus.", type: 'success');
     }
 
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $cools = Cool::where('is_deleted', false)
-            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->member_id))
             ->when($this->shepherdFilter, fn ($q) => $q->where('shepherd_id', $this->shepherdFilter))
             ->when($this->search, function ($q) {
                 $q->where(function ($sub) {
@@ -168,7 +171,7 @@ class CoolIndex extends Component
             ->orderBy('name')
             ->paginate(10);
 
-        $shepherds = Shepherd::where('is_deleted', false)->orderBy('name')->get();
+        $shepherds = Member::where('is_deleted', false)->where('is_active', true)->orderBy('name')->get();
 
         return view('livewire.cools.cool-index', compact('cools', 'shepherds', 'isShepherd'));
     }

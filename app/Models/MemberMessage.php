@@ -52,7 +52,7 @@ class MemberMessage extends Model
 
     public function shepherd(): BelongsTo
     {
-        return $this->belongsTo(Shepherd::class, 'shepherd_id', 'shepherd_id');
+        return $this->belongsTo(Member::class, 'shepherd_id', 'member_id');
     }
 
     public function session(): BelongsTo

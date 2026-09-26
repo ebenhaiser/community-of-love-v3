@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('message_id');
             $table->foreignId('cool_id')->constrained('cools', 'cool_id')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('member_id')->nullable()->constrained('members', 'member_id')->cascadeOnUpdate()->nullOnDelete();
-            $table->foreignId('shepherd_id')->nullable()->constrained('shepherds', 'shepherd_id')->cascadeOnUpdate()->nullOnDelete();
+            $table->foreignId('shepherd_id')->nullable()->constrained('members', 'member_id')->cascadeOnUpdate()->nullOnDelete();
             $table->foreignId('member_session_id')->nullable()->constrained('member_sessions', 'session_id')->cascadeOnUpdate()->nullOnDelete();
             $table->text('message');
             $table->string('status', 50)->default('UNREAD');

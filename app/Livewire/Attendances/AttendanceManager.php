@@ -34,11 +34,11 @@ class AttendanceManager extends Component
         if (! $this->activity_id) {
             // Find most recent activity for the user
             $user = Auth::user();
-            $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+            $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
             $recent = Activity::where('is_deleted', false)
                 ->when($isShepherd, function ($q) use ($user) {
-                    $q->whereHas('cool', fn ($c) => $c->where('shepherd_id', $user->shepherd_id));
+                    $q->whereHas('cool', fn ($c) => $c->where('shepherd_id', $user->member_id));
                 })
                 ->orderByDesc('activity_date')
                 ->first();
@@ -61,11 +61,11 @@ class AttendanceManager extends Component
     protected function authorizeActivity(): void
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         if ($this->activity_id && $isShepherd) {
             $act = Activity::with('cool')->find($this->activity_id);
-            if ($act && $act->cool && $act->cool->shepherd_id !== $user->shepherd_id) {
+            if ($act && $act->cool && $act->cool->shepherd_id !== $user->member_id) {
                 abort(403, 'Anda hanya dapat mengakses presensi kegiatan kelompok COOL Anda sendiri.');
             }
         }
@@ -99,7 +99,7 @@ class AttendanceManager extends Component
         }
 
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
         if ($isShepherd) {
             $isCoolMember = CoolMember::where('cool_id', $activity->cool_id)
                 ->where('member_id', $memberId)
@@ -134,6 +134,7 @@ class AttendanceManager extends Component
         }
 
         $attendance->save();
+        $this->dispatch('notify', message: 'Status presensi jemaat berhasil diperbarui.', type: 'success');
     }
 
     public function saveNote(int $memberId): void
@@ -156,7 +157,7 @@ class AttendanceManager extends Component
                 'modified_by' => Auth::id() ?? 1,
                 'date_modified' => now(),
             ]);
-            session()->flash('note_saved_'.$memberId, 'Catatan tersimpan');
+            $this->dispatch('notify', message: 'Catatan tersimpan untuk anggota ini', type: 'success');
         }
     }
 
@@ -203,21 +204,22 @@ class AttendanceManager extends Component
         }
 
         session()->flash('success', 'Semua anggota COOL berhasil ditandai Hadir!');
+        $this->dispatch('notify', message: 'Semua anggota COOL berhasil ditandai Hadir!', type: 'success');
     }
 
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $cools = Cool::where('is_deleted', false)
-            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->member_id))
             ->orderBy('name')
             ->get();
 
         $activities = Activity::where('is_deleted', false)
             ->when($isShepherd, function ($q) use ($user) {
-                $q->whereHas('cool', fn ($c) => $c->where('shepherd_id', $user->shepherd_id));
+                $q->whereHas('cool', fn ($c) => $c->where('shepherd_id', $user->member_id));
             })
             ->when($this->coolFilter, fn ($q) => $q->where('cool_id', $this->coolFilter))
             ->with(['cool', 'activityType'])

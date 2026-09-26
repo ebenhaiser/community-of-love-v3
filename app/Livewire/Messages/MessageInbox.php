@@ -44,9 +44,9 @@ class MessageInbox extends Component
     protected function authorizeMessage(MemberMessage $msg): void
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
         if ($isShepherd) {
-            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->member_id)
                 ->where('is_deleted', false)
                 ->pluck('cool_id')
                 ->toArray();
@@ -67,6 +67,7 @@ class MessageInbox extends Component
         ]);
 
         session()->flash('success', 'Pesan ditandai sebagai Sudah Dibaca.');
+        $this->dispatch('notify', message: 'Pesan ditandai sebagai Sudah Dibaca.', type: 'success');
     }
 
     public function markAsResponded(int $messageId): void
@@ -80,6 +81,7 @@ class MessageInbox extends Component
         ]);
 
         session()->flash('success', 'Pesan ditandai Sudah Direspon.');
+        $this->dispatch('notify', message: 'Pesan ditandai Sudah Direspon.', type: 'success');
     }
 
     public function deleteMessage(int $messageId): void
@@ -94,16 +96,17 @@ class MessageInbox extends Component
         ]);
 
         session()->flash('success', 'Pesan berhasil dihapus.');
+        $this->dispatch('notify', message: 'Pesan berhasil dihapus.', type: 'success');
     }
 
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $shepherdCoolIds = [];
         if ($isShepherd) {
-            $shepherdCoolIds = Cool::where('shepherd_id', $user->shepherd_id)
+            $shepherdCoolIds = Cool::where('shepherd_id', $user->member_id)
                 ->where('is_deleted', false)
                 ->pluck('cool_id')
                 ->toArray();
@@ -121,7 +124,7 @@ class MessageInbox extends Component
             ->paginate(10);
 
         $cools = Cool::where('is_deleted', false)
-            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->member_id))
             ->orderBy('name')
             ->get();
 

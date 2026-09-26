@@ -17,7 +17,6 @@ use App\Livewire\Messages\MessageInbox;
 use App\Livewire\Profile\UserProfile;
 use App\Livewire\Public\CoolPortal;
 use App\Livewire\QrAccess\QrAccessManager;
-use App\Livewire\Shepherds\ShepherdIndex;
 use App\Livewire\Statistics\AttendanceStatistics;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -56,7 +55,6 @@ Route::middleware('auth')->group(function () {
     // Komunitas COOL
     Route::get('/cools', CoolIndex::class)->name('cools.index');
     Route::get('/cools/{coolId}', CoolDetail::class)->name('cools.show');
-    Route::get('/shepherds', ShepherdIndex::class)->name('shepherds.index');
     Route::get('/members', MemberIndex::class)->name('members.index');
 
     // Kegiatan & Presensi

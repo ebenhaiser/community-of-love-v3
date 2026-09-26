@@ -3,8 +3,8 @@
 namespace App\Livewire\Master;
 
 use App\Helpers\AppHelper;
+use App\Models\Member;
 use App\Models\Role;
-use App\Models\Shepherd;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -113,7 +113,7 @@ class AppUserManager extends Component
         $this->email = $user->email ?? '';
         $this->phone = $user->phone ?? '';
         $this->role_id = $user->role_id;
-        $this->shepherd_id = $user->shepherd_id;
+        $this->shepherd_id = $user->member_id;
         $this->is_active = (bool) $user->is_active;
 
         $this->showModal = true;
@@ -148,7 +148,7 @@ class AppUserManager extends Component
             'email' => 'nullable|email|max:255|unique:app_users,email,'.($this->editingUserId ?: 'NULL').',user_id',
             'phone' => 'nullable|string|max:50',
             'role_id' => 'required|exists:roles,role_id',
-            'shepherd_id' => 'nullable|exists:shepherds,shepherd_id',
+            'shepherd_id' => 'nullable|exists:members,member_id',
             'is_active' => 'boolean',
         ];
 
@@ -161,7 +161,7 @@ class AppUserManager extends Component
             'email.unique' => 'Email ini sudah digunakan oleh akun lain.',
             'role_id.required' => 'Peran (Role) wajib dipilih.',
             'role_id.exists' => 'Peran yang dipilih tidak valid.',
-            'shepherd_id.exists' => 'Data Gembala tidak valid.',
+            'shepherd_id.exists' => 'Data Gembala tidak valid (harus terdaftar sebagai Jemaat).',
         ];
 
         $this->validate($rules, $messages);
@@ -174,13 +174,14 @@ class AppUserManager extends Component
                 'email' => $this->email ? strtolower(trim($this->email)) : null,
                 'phone' => $this->phone ?: null,
                 'role_id' => $this->role_id,
-                'shepherd_id' => $this->shepherd_id ?: null,
+                'member_id' => $this->shepherd_id ?: null,
                 'is_active' => $this->is_active,
                 'modified_by' => Auth::id(),
                 'date_modified' => now(),
             ]);
 
             session()->flash('success', "Data pengguna '{$target->full_name}' berhasil diperbarui.");
+            $this->dispatch('notify', message: "Data pengguna '{$target->full_name}' berhasil diperbarui.", type: 'success');
         } else {
             $newUser = User::create([
                 'full_name' => $this->full_name,
@@ -188,7 +189,7 @@ class AppUserManager extends Component
                 'email' => $this->email ? strtolower(trim($this->email)) : null,
                 'phone' => $this->phone ?: null,
                 'role_id' => $this->role_id,
-                'shepherd_id' => $this->shepherd_id ?: null,
+                'member_id' => $this->shepherd_id ?: null,
                 'password_hash' => Hash::make($this->defaultPassword),
                 'is_active' => $this->is_active,
                 'is_deleted' => false,
@@ -197,6 +198,7 @@ class AppUserManager extends Component
             ]);
 
             session()->flash('success', "Pengguna baru '{$newUser->full_name}' berhasil ditambahkan dengan password default ($this->defaultPassword).");
+            $this->dispatch('notify', message: "Pengguna baru '{$newUser->full_name}' berhasil ditambahkan dengan password default ($this->defaultPassword).", type: 'success');
         }
 
         $this->closeModal();
@@ -212,6 +214,7 @@ class AppUserManager extends Component
         $target->save();
 
         session()->flash('success', "Password akun '{$target->full_name}' ({$target->username}) berhasil direset ke default: $this->defaultPassword");
+        $this->dispatch('notify', message: "Password akun '{$target->full_name}' ({$target->username}) berhasil direset ke default: $this->defaultPassword", type: 'success');
     }
 
     public function toggleActive(int $userId): void
@@ -221,6 +224,7 @@ class AppUserManager extends Component
 
         if ($target->user_id === Auth::id()) {
             session()->flash('error', 'Anda tidak dapat menonaktifkan akun Anda sendiri yang sedang aktif.');
+            $this->dispatch('notify', message: 'Anda tidak dapat menonaktifkan akun Anda sendiri yang sedang aktif.', type: 'error');
 
             return;
         }
@@ -232,6 +236,7 @@ class AppUserManager extends Component
 
         $status = $target->is_active ? 'diaktifkan' : 'dinonaktifkan';
         session()->flash('success', "Status akun '{$target->full_name}' berhasil {$status}.");
+        $this->dispatch('notify', message: "Status akun '{$target->full_name}' berhasil {$status}.", type: 'success');
     }
 
     public function deleteUser(int $userId): void
@@ -241,6 +246,7 @@ class AppUserManager extends Component
 
         if ($target->user_id === Auth::id()) {
             session()->flash('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+            $this->dispatch('notify', message: 'Anda tidak dapat menghapus akun Anda sendiri.', type: 'error');
 
             return;
         }
@@ -251,13 +257,14 @@ class AppUserManager extends Component
         $target->save();
 
         session()->flash('success', "Pengguna '{$target->full_name}' berhasil dihapus (soft delete).");
+        $this->dispatch('notify', message: "Pengguna '{$target->full_name}' berhasil dihapus.", type: 'success');
     }
 
     public function render()
     {
         $this->authorizeMaster();
 
-        $query = User::with(['role', 'shepherd'])
+        $query = User::with(['role', 'member'])
             ->where('is_deleted', false)
             ->when($this->search, function ($q) {
                 $search = trim($this->search);
@@ -278,7 +285,7 @@ class AppUserManager extends Component
         $users = $query->orderBy('user_id', 'desc')->paginate($this->perPage);
 
         $roles = Role::where('is_deleted', false)->where('is_active', true)->orderBy('role_id')->get();
-        $shepherds = Shepherd::where('is_deleted', false)->where('is_active', true)->orderBy('name')->get();
+        $shepherds = Member::where('is_deleted', false)->where('is_active', true)->orderBy('name')->get();
 
         return view('livewire.master.app-user-manager', compact('users', 'roles', 'shepherds'));
     }

@@ -28,7 +28,7 @@
             <select class="form-select" wire:model.live="shepherdFilter">
               <option value="">Semua Gembala</option>
               @foreach ($shepherds as $shep)
-                <option value="{{ $shep->shepherd_id }}">{{ $shep->name }}</option>
+                <option value="{{ $shep->member_id }}">{{ $shep->name }}</option>
               @endforeach
             </select>
           </div>
@@ -158,7 +158,7 @@
                 <select id="shepherd_id" wire:model="shepherd_id" class="form-select @error('shepherd_id') is-invalid @enderror">
                   <option value="">-- Pilih Gembala COOL --</option>
                   @foreach ($shepherds as $shep)
-                    <option value="{{ $shep->shepherd_id }}">{{ $shep->name }} ({{ $shep->phone ?? 'Tanpa HP' }})</option>
+                    <option value="{{ $shep->member_id }}">{{ $shep->name }} ({{ $shep->phone ?? 'Tanpa HP' }})</option>
                   @endforeach
                 </select>
                 @error('shepherd_id') <div class="invalid-feedback">{{ $message }}</div> @enderror

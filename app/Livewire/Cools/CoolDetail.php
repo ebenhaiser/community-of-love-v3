@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Cools;
 
+use App\Helpers\AppHelper;
 use App\Models\Cool;
 use App\Models\QrAccess;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,7 @@ class CoolDetail extends Component
         $cool = Cool::findOrFail($this->coolId);
         $user = Auth::user();
         if ($user && $user->role && $user->role->name === 'SHEPHERD') {
-            if ($cool->shepherd_id !== $user->shepherd_id) {
+            if ($cool->shepherd_id !== $user->member_id) {
                 abort(403, 'Anda hanya dapat mengakses kelompok COOL yang Anda gembalakan.');
             }
         }
@@ -38,7 +39,7 @@ class CoolDetail extends Component
     {
         $cool = Cool::findOrFail($this->coolId);
         $user = Auth::user();
-        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $cool->shepherd_id !== $user->shepherd_id) {
+        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $cool->shepherd_id !== $user->member_id) {
             abort(403, 'Akses ditolak.');
         }
 
@@ -73,13 +74,14 @@ class CoolDetail extends Component
 
         $this->newPin = '';
         session()->flash('success', 'PIN keamanan akses QR berhasil diperbarui.');
+        $this->dispatch('notify', message: 'PIN keamanan akses QR berhasil diperbarui.', type: 'success');
     }
 
     public function regenerateQrToken(): void
     {
         $cool = Cool::findOrFail($this->coolId);
         $user = Auth::user();
-        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $cool->shepherd_id !== $user->shepherd_id) {
+        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $cool->shepherd_id !== $user->member_id) {
             abort(403, 'Akses ditolak.');
         }
 
@@ -91,7 +93,34 @@ class CoolDetail extends Component
                 'date_modified' => now(),
             ]);
             session()->flash('success', 'Token QR Code berhasil diperbarui. Token lama otomatis tidak berlaku.');
+            $this->dispatch('notify', message: 'Token QR Code berhasil diperbarui. Token lama otomatis tidak berlaku.', type: 'success');
         }
+    }
+
+    public function generateMissingQr(): void
+    {
+        $cool = Cool::findOrFail($this->coolId);
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->name === 'SHEPHERD' && $cool->shepherd_id !== $user->member_id) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $token = 'qr-'.Str::slug($cool->name).'-'.Str::random(12);
+        $defaultPin = AppHelper::getSettings('default_qr_pin') ?? '123456';
+
+        QrAccess::create([
+            'cool_id' => $cool->cool_id,
+            'access_code' => 'ACC-'.strtoupper(Str::random(6)),
+            'pin_hash' => Hash::make($defaultPin),
+            'qr_token' => $token,
+            'is_active' => true,
+            'is_deleted' => false,
+            'created_by' => Auth::id() ?? 1,
+            'date_created' => now(),
+        ]);
+
+        session()->flash('success', "Akses QR berhasil dibuat untuk {$cool->name}. Default PIN: ".$defaultPin);
+        $this->dispatch('notify', message: "Akses QR berhasil dibuat untuk {$cool->name}. Default PIN: ".$defaultPin, type: 'success');
     }
 
     public function render()

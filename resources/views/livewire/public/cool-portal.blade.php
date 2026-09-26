@@ -455,15 +455,7 @@
         </div>
 
         <div class="p-3 p-sm-4">
-          @if (session()->has('message_sent'))
-            <div class="alert alert-success d-flex align-items-center shadow-sm p-3 mb-3 rounded-4" role="alert">
-              <i class="bi bi-check-circle-fill fs-3 me-3 text-success"></i>
-              <div>
-                <strong class="d-block" style="font-size: 13px;">Puji Tuhan!</strong>
-                <span style="font-size: 12px;">{{ session('message_sent') }}</span>
-              </div>
-            </div>
-          @endif
+
 
           <form wire:submit="sendMessage">
             <!-- Category Chips Selector -->

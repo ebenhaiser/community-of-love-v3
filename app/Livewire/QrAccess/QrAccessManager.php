@@ -28,9 +28,9 @@ class QrAccessManager extends Component
     {
         $qr = QrAccess::with('cool')->findOrFail($qrAccessId);
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
-        if ($isShepherd && $qr->cool && $qr->cool->shepherd_id !== $user->shepherd_id) {
+        if ($isShepherd && $qr->cool && $qr->cool->shepherd_id !== $user->member_id) {
             abort(403, 'Anda hanya dapat mengelola akses kelompok COOL Anda sendiri.');
         }
 
@@ -51,9 +51,9 @@ class QrAccessManager extends Component
 
         $qr = QrAccess::with('cool')->findOrFail($this->selectedQrAccessId);
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
-        if ($isShepherd && $qr->cool && $qr->cool->shepherd_id !== $user->shepherd_id) {
+        if ($isShepherd && $qr->cool && $qr->cool->shepherd_id !== $user->member_id) {
             abort(403, 'Akses ditolak.');
         }
 
@@ -64,6 +64,7 @@ class QrAccessManager extends Component
         ]);
 
         session()->flash('success', "PIN untuk {$this->selectedCoolName} berhasil diperbarui menjadi: {$this->newPin}");
+        $this->dispatch('notify', message: "PIN untuk {$this->selectedCoolName} berhasil diperbarui menjadi: {$this->newPin}", type: 'success');
         $this->showPinModal = false;
         $this->newPin = '';
     }
@@ -72,9 +73,9 @@ class QrAccessManager extends Component
     {
         $qr = QrAccess::with('cool')->findOrFail($qrAccessId);
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
-        if ($isShepherd && $qr->cool && $qr->cool->shepherd_id !== $user->shepherd_id) {
+        if ($isShepherd && $qr->cool && $qr->cool->shepherd_id !== $user->member_id) {
             abort(403, 'Akses ditolak.');
         }
 
@@ -87,15 +88,16 @@ class QrAccessManager extends Component
         ]);
 
         session()->flash('success', "Token QR untuk {$qr->cool->name} berhasil diperbarui.");
+        $this->dispatch('notify', message: "Token QR untuk {$qr->cool->name} berhasil diperbarui.", type: 'success');
     }
 
     public function generateMissingQr(int $coolId): void
     {
         $cool = Cool::findOrFail($coolId);
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
-        if ($isShepherd && $cool->shepherd_id !== $user->shepherd_id) {
+        if ($isShepherd && $cool->shepherd_id !== $user->member_id) {
             abort(403, 'Akses ditolak.');
         }
 
@@ -114,15 +116,16 @@ class QrAccessManager extends Component
         ]);
 
         session()->flash('success', "Akses QR berhasil dibuat untuk {$cool->name}. Default PIN: ".$defaultPin);
+        $this->dispatch('notify', message: "Akses QR berhasil dibuat untuk {$cool->name}. Default PIN: ".$defaultPin, type: 'success');
     }
 
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $cools = Cool::where('is_deleted', false)
-            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->member_id))
             ->with(['shepherd', 'qrAccess' => fn ($q) => $q->where('qr_accesses.is_deleted', false)])
             ->orderBy('name')
             ->get();

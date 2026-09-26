@@ -182,6 +182,7 @@ class FollowUpIndex extends Component
         ]);
 
         session()->flash('success', "Tindak lanjut pastoral untuk '{$followUp->member->name}' berhasil ditandai SUDAH DITANGANI.");
+        $this->dispatch('notify', message: "Tindak lanjut pastoral untuk '{$followUp->member->name}' berhasil ditandai SUDAH DITANGANI.", type: 'success');
         $this->closeModal();
     }
 
@@ -195,6 +196,7 @@ class FollowUpIndex extends Component
         ]);
 
         session()->flash('success', "Status follow-up untuk '{$followUp->member->name}' berhasil dikembalikan ke BELUM DITANGANI.");
+        $this->dispatch('notify', message: "Status follow-up untuk '{$followUp->member->name}' berhasil dikembalikan ke BELUM DITANGANI.", type: 'success');
     }
 
     public function deleteFollowUp(int $followUpId): void
@@ -207,15 +209,16 @@ class FollowUpIndex extends Component
         ]);
 
         session()->flash('success', 'Catatan follow-up berhasil dihapus.');
+        $this->dispatch('notify', message: 'Catatan follow-up berhasil dihapus.', type: 'success');
     }
 
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $cools = Cool::where('is_deleted', false)
-            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->member_id))
             ->orderBy('name')
             ->get();
 

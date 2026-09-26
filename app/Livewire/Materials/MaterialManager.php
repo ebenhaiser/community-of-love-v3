@@ -66,9 +66,9 @@ class MaterialManager extends Component
 
         if (! $this->modal_activity_id) {
             $user = Auth::user();
-            $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+            $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
             $recent = Activity::where('is_deleted', false)
-                ->when($isShepherd, fn ($q) => $q->whereHas('cool', fn ($c) => $c->where('shepherd_id', $user->shepherd_id)))
+                ->when($isShepherd, fn ($q) => $q->whereHas('cool', fn ($c) => $c->where('shepherd_id', $user->member_id)))
                 ->orderByDesc('activity_date')
                 ->first();
             if ($recent) {
@@ -102,11 +102,11 @@ class MaterialManager extends Component
         ]);
 
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         if ($isShepherd) {
             $act = Activity::with('cool')->find($this->modal_activity_id);
-            if (! $act || ! $act->cool || $act->cool->shepherd_id !== $user->shepherd_id) {
+            if (! $act || ! $act->cool || $act->cool->shepherd_id !== $user->member_id) {
                 $this->addError('modal_activity_id', 'Anda hanya dapat mengunggah materi untuk kegiatan kelompok COOL Anda sendiri.');
 
                 return;
@@ -138,6 +138,7 @@ class MaterialManager extends Component
         ]);
 
         session()->flash('success', "Materi '{$this->file_name}' berhasil ditambahkan.");
+        $this->dispatch('notify', message: "Materi '{$this->file_name}' berhasil ditambahkan.", type: 'success');
         $this->showModal = false;
         $this->reset(['file_name', 'external_url', 'file_upload', 'description']);
     }
@@ -146,9 +147,9 @@ class MaterialManager extends Component
     {
         $material = ActivityMaterial::with('activity.cool')->findOrFail($materialId);
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
-        if ($isShepherd && $material->activity && $material->activity->cool && $material->activity->cool->shepherd_id !== $user->shepherd_id) {
+        if ($isShepherd && $material->activity && $material->activity->cool && $material->activity->cool->shepherd_id !== $user->member_id) {
             abort(403, 'Akses ditolak.');
         }
 
@@ -159,15 +160,16 @@ class MaterialManager extends Component
         ]);
 
         session()->flash('success', "Materi '{$material->file_name}' berhasil dihapus.");
+        $this->dispatch('notify', message: "Materi '{$material->file_name}' berhasil dihapus.", type: 'success');
     }
 
     public function render()
     {
         $user = Auth::user();
-        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->shepherd_id;
+        $isShepherd = $user && $user->role && $user->role->name === 'SHEPHERD' && $user->member_id;
 
         $cools = Cool::where('is_deleted', false)
-            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->shepherd_id))
+            ->when($isShepherd, fn ($q) => $q->where('shepherd_id', $user->member_id))
             ->orderBy('name')
             ->get();
 

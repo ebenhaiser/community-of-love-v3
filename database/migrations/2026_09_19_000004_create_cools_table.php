@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('cool_id');
             $table->string('cool_code', 50)->unique();
             $table->string('name', 255);
-            $table->foreignId('shepherd_id')->constrained('shepherds', 'shepherd_id')->cascadeOnUpdate()->restrictOnDelete();
+            $table->unsignedBigInteger('shepherd_id')->index();
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->boolean('is_deleted')->default(false)->index();
